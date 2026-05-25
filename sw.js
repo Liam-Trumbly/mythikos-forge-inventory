@@ -1,18 +1,17 @@
 // Mythikos Forge — Service Worker
 // Caches the app shell so the app opens even with no signal (e.g. at events).
 // Bump CACHE_VERSION whenever you change the HTML or want to force a refresh.
-const CACHE_VERSION = 'mf-v2';
+const CACHE_VERSION = 'mf-v3'; // Bumped version to force a clean update
 
-// Relative URLs — resolved against the SW's own location, so this works
-// correctly inside a GitHub Pages project subfolder (username.github.io/repo/).
+// Absolute URLs relative to the domain root for stable subfolder hosting.
 const APP_SHELL = [
-  './',
-  './mythikos-forge-inventory.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png',
-  './header-logo.png',
+  '/mythikos-forge-inventory/',
+  '/mythikos-forge-inventory/index.html', // Fixed filename from image_2a3296.png
+  '/mythikos-forge-inventory/manifest.json',
+  '/mythikos-forge-inventory/icon-192.png',
+  '/mythikos-forge-inventory/icon-512.png',
+  '/mythikos-forge-inventory/apple-touch-icon.png',
+  '/mythikos-forge-inventory/header-logo.png',
   // CDN libraries the app needs to function offline:
   'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.4/qrcode.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js',
@@ -62,6 +61,6 @@ self.addEventListener('fetch', event => {
         caches.open(CACHE_VERSION).then(c => c.put(req, copy)).catch(() => {});
         return res;
       })
-      .catch(() => caches.match(req).then(hit => hit || caches.match('./mythikos-forge-inventory.html')))
+      .catch(() => caches.match(req).then(hit => hit || caches.match('/mythikos-forge-inventory/index.html')))
   );
 });
