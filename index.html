@@ -7,6 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mythikos Forge">
 <meta name="theme-color" content="#C8C8C8">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" href="./icon-192.png">
 <title>Mythikos Forge — Inventory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -30,7 +33,7 @@
   /* Header */
   .app-header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--black);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100;border-bottom:2px solid var(--purple)}
   .header-brand{display:flex;align-items:center;gap:10px}
-  .header-logo{width:32px;height:32px}
+  .header-logo{width:36px;height:36px;background:var(--bg);border-radius:8px;padding:3px;object-fit:contain}
   .header-title{font-family:var(--font-display);font-size:15px;font-weight:600;color:#fff;letter-spacing:0.04em;line-height:1.2}
   .header-title span{display:block;font-size:9px;font-weight:400;color:var(--purple-light);letter-spacing:0.12em;text-transform:uppercase}
   .header-right{display:flex;align-items:center;gap:8px}
@@ -203,16 +206,7 @@
 
 <header class="app-header">
   <div class="header-brand">
-    <svg class="header-logo" viewBox="0 0 100 100" fill="none">
-      <path d="M15 72 Q20 58 35 58 L65 58 Q80 58 85 72 L85 80 Q85 85 80 85 L20 85 Q15 85 15 80 Z" fill="#1A1A1A"/>
-      <rect x="30" y="52" width="40" height="8" rx="2" fill="#1A1A1A"/>
-      <rect x="46" y="10" width="8" height="55" rx="2" fill="#5B2D8E"/>
-      <rect x="48.5" y="10" width="3" height="55" fill="#7B4DB0" opacity="0.5"/>
-      <rect x="30" y="36" width="40" height="7" rx="2" fill="#1A1A1A"/>
-      <circle cx="50" cy="8" r="6" fill="#1A1A1A"/>
-      <circle cx="38" cy="32" r="3" fill="#5B2D8E"/>
-      <circle cx="62" cy="32" r="3" fill="#5B2D8E"/>
-    </svg>
+    <img class="header-logo" src="./header-logo.png" alt="Mythikos Forge">
     <div class="header-title">Mythikos Forge<span>Inventory</span></div>
   </div>
   <div class="header-right">
@@ -1152,6 +1146,14 @@ function showToast(msg,type='info') {
 }
 
 window.addEventListener('load',init);
+
+// Register service worker for offline launch (relative path scopes it to the
+// app's own folder, which is correct for a GitHub Pages project subfolder).
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('SW registration failed:',e));
+  });
+}
 </script>
 </body>
 </html>
