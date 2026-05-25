@@ -2,21 +2,21 @@
   "name": "Mythikos Forge Inventory",
   "short_name": "Mythikos Forge",
   "description": "Inventory management for Mythikos Forge",
-  "start_url": "./mythikos-forge-inventory/index.html",
-  "scope": "./",
+  "start_url": "/mythikos-forge-inventory/index.html",
+  "scope": "/mythikos-forge-inventory/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#C8C8C8",
   "theme_color": "#C8C8C8",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "/mythikos-forge-inventory/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icon-512.png",
+      "src": "/mythikos-forge-inventory/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
