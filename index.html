@@ -894,11 +894,39 @@ async function importFromSquarespace() {
   try {
     const res=await apiCall('GET','/squarespace/products');
     if(res&&res.products){
-      // Filter out already imported products
-      const newProducts=res.products.filter(sp=>!APP.products.find(p=>p.sqId===sp.variantId));
-      if(newProducts.length===0){showToast('No new products to import','info');return;}
-      // Show preview modal
+      const newProducts=[]; const refreshed=[];
+      res.products.forEach(sp=>{
+        const existing=APP.products.find(p=>
+          (sp.variantId && p.sqId===sp.variantId) ||
+          (sp.sku && p.sku===sp.sku)
+        );
+        if(existing){
+          // Already have it — refresh its name/variant/IDs from Squarespace
+          // (keeps names current) without touching its quantity.
+          const before=existing.name+'|'+existing.variant+'|'+existing.sqId;
+          existing.name=sp.name||existing.name;
+          existing.variant=sp.variant||existing.variant;
+          if(sp.variantId) existing.sqId=sp.variantId;
+          const after=existing.name+'|'+existing.variant+'|'+existing.sqId;
+          if(before!==after) refreshed.push(existing);
+        } else {
+          newProducts.push(sp);
+        }
+      });
+
+      // Apply any refreshes immediately (local + push to Sheet via upsert)
+      if(refreshed.length>0){
+        saveLocalData();
+        renderProductList(); renderDashboard();
+        refreshed.forEach(p=>apiCall('POST','/sync',{type:'product_updated',product:p}));
+      }
+
+      if(newProducts.length===0){
+        showToast(refreshed.length>0?`Refreshed ${refreshed.length} product${refreshed.length===1?'':'s'}, none new`:'Everything is up to date','success');
+        return;
+      }
       APP.importPreview=newProducts;
+      APP.importRefreshedCount=refreshed.length;
       renderImportPreview(newProducts);
       document.getElementById('import-preview-modal').classList.add('open');
     } else {
@@ -937,7 +965,8 @@ function confirmImport() {
   saveLocalData();
   renderProductList();
   document.getElementById('import-preview-modal').classList.remove('open');
-  showToast(`Imported ${added} product${added===1?'':'s'}`,'success');
+  const refreshedNote=APP.importRefreshedCount>0?` · refreshed ${APP.importRefreshedCount}`:'';
+  showToast(`Imported ${added} product${added===1?'':'s'}${refreshedNote}`,'success');
   // Sync all to Sheets
   APP.products.slice(-added).forEach(p=>apiCall('POST','/sync',{type:'product_added',product:p}));
 }
