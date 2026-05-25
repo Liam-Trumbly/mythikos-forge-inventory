@@ -1147,11 +1147,11 @@ function showToast(msg,type='info') {
 
 window.addEventListener('load',init);
 
-// Register service worker for offline launch (relative path scopes it to the
-// app's own folder, which is correct for a GitHub Pages project subfolder).
+// Register service worker for offline launch (absolute path ensures stable scoping
+// when launched from the iPhone home screen within a GitHub Pages project subfolder).
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('SW registration failed:',e));
+    navigator.serviceWorker.register('/mythikos-forge-inventory/sw.js').catch(e=>console.warn('SW registration failed:',e));
   });
 }
 </script>
