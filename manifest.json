@@ -2,7 +2,7 @@
   "name": "Mythikos Forge Inventory",
   "short_name": "Mythikos Forge",
   "description": "Inventory management for Mythikos Forge",
-  "start_url": "./mythikos-forge-inventory.html",
+  "start_url": "./mythikos-forge-inventory/index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
