@@ -1,7 +1,7 @@
 // Mythikos Forge — Service Worker
 // Caches the app shell so the app opens even with no signal (e.g. at events).
 // Bump CACHE_VERSION whenever you change the HTML or want to force a refresh.
-const CACHE_VERSION = 'mf-v3'; // Bumped version to force a clean update
+const CACHE_VERSION = 'mf-v6'; // Bumped version to force a clean update
 
 // Absolute URLs relative to the domain root for stable subfolder hosting.
 const APP_SHELL = [
