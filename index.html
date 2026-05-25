@@ -234,8 +234,8 @@
     <div class="stat-grid">
       <div class="stat-card purple"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total SKUs</div></div>
       <div class="stat-card danger"><div class="stat-val" id="stat-low">—</div><div class="stat-label">Low Stock</div></div>
-      <div class="stat-card success"><div class="stat-val" id="stat-home">—</div><div class="stat-label">Home Units</div></div>
-      <div class="stat-card"><div class="stat-val" id="stat-event">—</div><div class="stat-label">Event Units</div></div>
+      <div class="stat-card success"><div class="stat-val" id="stat-home">—</div><div class="stat-label">Total Units</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-event">—</div><div class="stat-label">Out of Stock</div></div>
     </div>
     <div class="card">
       <div class="section-header">
@@ -243,13 +243,6 @@
         <button class="section-action" onclick="showView('products')">View all</button>
       </div>
       <div id="low-stock-list"></div>
-    </div>
-    <div class="card">
-      <div class="section-header">
-        <div class="card-title" style="margin:0">Active Events</div>
-        <button class="section-action" onclick="showView('events')">Manage</button>
-      </div>
-      <div id="active-events-summary"></div>
     </div>
     <div class="card">
       <div class="section-header"><div class="card-title" style="margin:0">Recent Activity</div></div>
@@ -266,21 +259,22 @@
     <button class="add-product-btn" onclick="showAddProduct()">
       <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add New Product
     </button>
+    <button class="save-btn secondary" style="margin-bottom:12px" onclick="printAllQRCodes()">Print All QR Codes</button>
     <div id="product-list"></div>
   </div>
 
   <!-- SCAN -->
   <div class="view" id="view-scan">
-    <div class="scan-mode-toggle">
-      <button class="scan-mode-btn sale active" id="mode-sale" onclick="setScanMode('sale')">▼ Sale</button>
-      <button class="scan-mode-btn restock" id="mode-restock" onclick="setScanMode('restock')">▲ Restock</button>
+    <div class="card" style="padding:12px 14px;margin-bottom:12px">
+      <div style="font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--success)">▲ Restock / Add Stock</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:4px">Scan a product to add stock you've made or received. Sales are pulled in automatically from your platforms — you never enter them here.</p>
     </div>
     <div class="scanner-container">
       <video id="scanner-video" playsinline autoplay muted></video>
       <div class="scanner-overlay"><div class="scanner-frame"><div class="scanner-line"></div></div></div>
     </div>
     <p class="scanner-hint">Point camera at a product QR code</p>
-    <button id="scan-btn" class="sale-btn" onclick="startScan()">Start Scanner</button>
+    <button id="scan-btn" class="restock-btn" onclick="startScan()">Start Scanner</button>
     <div style="margin-top:16px">
       <div class="card">
         <div class="card-title">Manual Entry</div>
@@ -291,17 +285,6 @@
         <div id="manual-product-list"></div>
       </div>
     </div>
-  </div>
-
-  <!-- EVENTS -->
-  <div class="view" id="view-events">
-    <button class="add-product-btn" onclick="showCreateEvent()">
-      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Create New Event
-    </button>
-    <div class="section-header" style="margin-bottom:8px"><div class="section-title">Active Events</div></div>
-    <div id="active-events-list"></div>
-    <div class="section-header" style="margin-top:16px;margin-bottom:8px"><div class="section-title">Past Events</div></div>
-    <div id="past-events-list"></div>
   </div>
 
   <!-- SYNC -->
@@ -355,7 +338,13 @@
       <button class="save-btn secondary" style="margin-top:12px;margin-bottom:0" onclick="testConnection()">Test Connection</button>
     </div>
     <button class="save-btn" onclick="saveSettings()">Save Settings</button>
-    <button class="save-btn secondary" onclick="testConnection()">Test Connection</button>
+
+    <div class="settings-label" style="margin-top:20px;color:var(--danger)">Danger Zone</div>
+    <div class="card" style="margin-bottom:12px;border-color:var(--danger)">
+      <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Clears all products and history stored on <b>this device only</b>. Your Google Sheet and Squarespace are untouched. Use this before re-importing fresh from Squarespace.</p>
+      <button class="save-btn danger-btn" style="margin-top:12px;margin-bottom:0" onclick="resetLocalData()">Reset Local Data</button>
+    </div>
+
     <div style="text-align:center;margin-top:20px;padding-bottom:8px">
       <p style="font-size:11px;color:var(--text-light);font-family:var(--font-display);letter-spacing:0.08em">MYTHIKOS FORGE INVENTORY v2.0</p>
     </div>
@@ -376,10 +365,6 @@
     <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
     <span class="nav-label">Scan</span>
   </button>
-  <button class="nav-btn" id="nav-events" onclick="showView('events')">
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-    <span class="nav-label">Events</span>
-  </button>
   <button class="nav-btn" id="nav-sync" onclick="showView('sync')">
     <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
     <span class="nav-label">Sync</span>
@@ -392,18 +377,14 @@
     <div class="modal-handle"></div>
     <div class="modal-product-name" id="modal-product-name">—</div>
     <div class="modal-variant" id="modal-variant">—</div>
-    <div class="modal-stock-row"><span class="modal-stock-label">🏠 Home stock</span><span class="modal-stock-val" id="modal-home-qty">0</span></div>
-    <div class="modal-stock-row"><span class="modal-stock-label">⚔ Event stock</span><span class="modal-stock-val" id="modal-event-qty">0</span></div>
+    <div class="modal-stock-row" style="margin-bottom:16px"><span class="modal-stock-label">Current stock</span><span class="modal-stock-val" id="modal-home-qty">0</span></div>
+    <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:8px">How many are you adding?</p>
     <div class="qty-row">
       <button class="qty-btn" onclick="adjustModalQty(-1)">−</button>
       <div class="qty-display" id="modal-qty">1</div>
       <button class="qty-btn" onclick="adjustModalQty(1)">+</button>
     </div>
-    <div class="settings-field" style="margin-bottom:16px">
-      <label>Stock bucket</label>
-      <select id="modal-bucket"><option value="home">🏠 Home Stock</option><option value="event">⚔ Event Stock</option></select>
-    </div>
-    <button class="modal-confirm-btn sale" id="modal-confirm-btn" onclick="confirmScan()">Confirm Sale</button>
+    <button class="modal-confirm-btn restock" id="modal-confirm-btn" onclick="confirmScan()">Confirm Restock</button>
     <button class="modal-cancel-btn" onclick="closeScanModal()">Cancel</button>
   </div>
 </div>
@@ -433,16 +414,22 @@
     <div class="modal-variant" id="detail-variant">—</div>
     <div class="scan-mode-toggle" style="margin-bottom:16px">
       <button class="scan-mode-btn active detail-tab-btn" data-tab="info" onclick="showDetailTab('info')">Info</button>
+      <button class="scan-mode-btn detail-tab-btn" data-tab="set" onclick="showDetailTab('set')">Set</button>
       <button class="scan-mode-btn detail-tab-btn" data-tab="edit" onclick="showDetailTab('edit')">Edit</button>
       <button class="scan-mode-btn detail-tab-btn" data-tab="qr" onclick="showDetailTab('qr')">QR</button>
     </div>
     <div id="detail-info">
-      <div class="modal-stock-row"><span class="modal-stock-label">🏠 Home stock</span><span class="modal-stock-val" id="detail-home-qty">0</span></div>
-      <div class="modal-stock-row"><span class="modal-stock-label">⚔ Event stock</span><span class="modal-stock-val" id="detail-event-qty">0</span></div>
-      <div class="modal-stock-row" style="margin-bottom:20px"><span class="modal-stock-label">Total</span><span class="modal-stock-val" id="detail-total-qty">0</span></div>
-      <button class="modal-confirm-btn restock" onclick="closeProductDetailModal();setScanMode('restock');showView('scan')">+ Add Restock</button>
-      <button class="modal-confirm-btn purple" onclick="packFromDetail()">⚔ Pack for Event</button>
+      <div class="modal-stock-row" style="margin-bottom:20px"><span class="modal-stock-label">In stock</span><span class="modal-stock-val" id="detail-home-qty">0</span></div>
+      <button class="modal-confirm-btn restock" onclick="closeProductDetailModal();showView('scan')">+ Add Restock</button>
       <button class="modal-cancel-btn" style="color:var(--danger);font-weight:600;margin-top:4px" onclick="archiveProduct()">Archive Product</button>
+    </div>
+    <div id="detail-set" style="display:none">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.5">Set the exact count after a recount, breakage, or to fix drift. This sets the absolute quantity and pushes it to your connected platforms.</p>
+      <div class="settings-field"><label>In stock (actual count)</label><input type="number" id="set-home-qty" min="0"></div>
+      <input type="hidden" id="set-event-qty" value="0">
+      <div class="settings-field"><label>Reason (optional)</label><input type="text" id="set-reason" placeholder="e.g. Recount, breakage, found extra"></div>
+      <button class="save-btn" onclick="saveSetCount()">Set Count</button>
+      <button class="modal-cancel-btn" onclick="showDetailTab('info')">Cancel</button>
     </div>
     <div id="detail-edit" style="display:none">
       <div class="settings-field"><label>Product Name</label><input type="text" id="edit-name"></div>
@@ -474,58 +461,18 @@
   </div>
 </div>
 
-<!-- Create Event Modal -->
-<div class="modal-overlay" id="create-event-modal" onclick="closeCreateEventModal(event)">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--purple)">New Event</div>
-    <div class="settings-field"><label>Event Name</label><input type="text" id="new-event-name" placeholder="e.g. ComicCon 2026"></div>
-    <div class="settings-field"><label>Date</label><input type="date" id="new-event-date"></div>
-    <div class="settings-field"><label>Location (optional)</label><input type="text" id="new-event-location" placeholder="e.g. Colorado Springs Convention Center"></div>
-    <button class="save-btn" onclick="saveNewEvent()">Create Event</button>
-    <button class="modal-cancel-btn" onclick="closeCreateEventModal()">Cancel</button>
-  </div>
-</div>
-
-<!-- Event Detail Modal -->
-<div class="modal-overlay" id="event-detail-modal" onclick="closeEventDetailModal(event)">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-product-name" id="event-detail-name">—</div>
-    <div class="modal-variant" id="event-detail-meta">—</div>
-    <div class="scan-mode-toggle" style="margin-bottom:16px">
-      <button class="scan-mode-btn active detail-tab-btn" data-tab="estock" onclick="showEventTab('estock')">Stock</button>
-      <button class="scan-mode-btn detail-tab-btn" data-tab="epack" onclick="showEventTab('epack')">Pack</button>
-      <button class="scan-mode-btn detail-tab-btn" data-tab="eclose" onclick="showEventTab('eclose')">Close</button>
-    </div>
-    <div id="event-tab-estock"><div id="event-stock-list"></div></div>
-    <div id="event-tab-epack" style="display:none">
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Enter qty to move Home → Event.</p>
-      <div id="pack-items-list"></div>
-      <button class="save-btn" style="margin-top:8px" onclick="submitPackItems()">Pack Selected Items</button>
-    </div>
-    <div id="event-tab-eclose" style="display:none">
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Closing returns all remaining event stock back to Home and marks the event complete.</p>
-      <div id="close-event-summary"></div>
-      <button class="save-btn danger-btn" onclick="closeEvent()">Close Event & Return Stock</button>
-      <button class="modal-cancel-btn" onclick="closeEventDetailModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
 <script>
 const APP = {
-  currentView:'dashboard', scanMode:'sale', scanning:false, scanStream:null, scanAnimFrame:null,
-  modalProduct:null, modalQty:1, detailProduct:null, detailEvent:null,
-  settings:{}, platformStatus:{}, products:[], events:[], transactions:[], syncLog:[], lastSync:null,
+  currentView:'dashboard', scanMode:'restock', scanning:false, scanStream:null, scanAnimFrame:null,
+  modalProduct:null, modalQty:1, detailProduct:null,
+  settings:{}, platformStatus:{}, products:[], transactions:[], syncLog:[], lastSync:null,
 };
 
 // ── INIT ──
 function init() {
   loadSettings(); loadLocalData();
-  renderDashboard(); renderProductList(); renderEventsList(); renderSyncLog();
+  renderDashboard(); renderProductList(); renderSyncLog();
   updatePlatformDots(); updateQueueBadge();
-  document.getElementById('new-event-date').value = new Date().toISOString().split('T')[0];
 
   // Outbox retry triggers: on reconnect, on tab refocus, and every 30s.
   window.addEventListener('online', ()=>{updateQueueBadge();flushOutbox();});
@@ -549,7 +496,6 @@ function loadSettings() {
 function loadLocalData() {
   APP.products = JSON.parse(localStorage.getItem('mf_products')||'[]');
   APP.transactions = JSON.parse(localStorage.getItem('mf_transactions')||'[]');
-  APP.events = JSON.parse(localStorage.getItem('mf_events')||'[]');
   APP.syncLog = JSON.parse(localStorage.getItem('mf_synclog')||'[]');
   APP.lastSync = localStorage.getItem('mf_lastsync')||null;
 }
@@ -557,7 +503,6 @@ function loadLocalData() {
 function saveLocalData() {
   localStorage.setItem('mf_products', JSON.stringify(APP.products));
   localStorage.setItem('mf_transactions', JSON.stringify(APP.transactions));
-  localStorage.setItem('mf_events', JSON.stringify(APP.events));
   localStorage.setItem('mf_synclog', JSON.stringify(APP.syncLog));
   if (APP.lastSync) localStorage.setItem('mf_lastsync', APP.lastSync);
 }
@@ -573,7 +518,6 @@ function showView(name) {
   APP.currentView = name;
   if (name==='dashboard') renderDashboard();
   if (name==='products') renderProductList();
-  if (name==='events') renderEventsList();
   if (name==='sync') renderSyncLog();
   window.scrollTo(0,0);
 }
@@ -582,36 +526,28 @@ function showView(name) {
 function renderDashboard() {
   const lowItems = APP.products.filter(p=>p.homeQty<=p.threshold);
   const emptyItems = APP.products.filter(p=>p.homeQty===0);
-  const totalHome = APP.products.reduce((s,p)=>s+(p.homeQty||0),0);
-  const totalEvent = APP.products.reduce((s,p)=>s+(p.eventQty||0),0);
-  const activeEvents = APP.events.filter(e=>e.status==='active');
+  const totalUnits = APP.products.reduce((s,p)=>s+(p.homeQty||0),0);
 
   document.getElementById('stat-total').textContent = APP.products.length;
   document.getElementById('stat-low').textContent = lowItems.length;
-  document.getElementById('stat-home').textContent = totalHome;
-  document.getElementById('stat-event').textContent = totalEvent;
+  document.getElementById('stat-home').textContent = totalUnits;
+  document.getElementById('stat-event').textContent = emptyItems.length;
 
   let bannerHtml = '';
   emptyItems.forEach(p=>{
-    bannerHtml += `<div class="alert-banner danger"><div class="alert-banner-icon">🚨</div><div><div class="alert-banner-text">${p.name} — Home stock empty!</div><div class="alert-banner-sub">${p.variant||p.sku} · Event stock: ${p.eventQty||0} units</div></div></div>`;
+    bannerHtml += `<div class="alert-banner danger"><div class="alert-banner-icon">🚨</div><div><div class="alert-banner-text">${p.name} — Out of stock!</div><div class="alert-banner-sub">${p.variant||p.sku}</div></div></div>`;
   });
   lowItems.filter(p=>p.homeQty>0).forEach(p=>{
-    bannerHtml += `<div class="alert-banner warn"><div class="alert-banner-icon">🔔</div><div><div class="alert-banner-text">Low stock: ${p.name}</div><div class="alert-banner-sub">🏠 ${p.homeQty} home · ⚔ ${p.eventQty||0} event · Print more soon</div></div></div>`;
+    bannerHtml += `<div class="alert-banner warn"><div class="alert-banner-icon">🔔</div><div><div class="alert-banner-text">Low stock: ${p.name}</div><div class="alert-banner-sub">${p.homeQty} left · Print more soon</div></div></div>`;
   });
   document.getElementById('alert-banners').innerHTML = bannerHtml;
 
   const ll = document.getElementById('low-stock-list');
   ll.innerHTML = lowItems.length===0
     ? '<div class="empty-state" style="padding:20px"><p>All stocked up! 🎉</p></div>'
-    : lowItems.slice(0,6).map(p=>`<div class="stock-item"><div><div class="stock-name">${p.name}</div><div class="stock-variant">${p.variant||p.sku}</div></div><div style="display:flex;gap:6px"><div style="text-align:center;padding:4px 8px;border-radius:8px;background:var(--success-bg)"><div style="font-size:15px;font-weight:700;color:var(--success)">${p.homeQty}</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Home</div></div><div style="text-align:center;padding:4px 8px;border-radius:8px;background:var(--warning-bg)"><div style="font-size:15px;font-weight:700;color:var(--warning)">${p.eventQty||0}</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Event</div></div></div></div>`).join('');
-
-  const aes = document.getElementById('active-events-summary');
-  aes.innerHTML = activeEvents.length===0
-    ? '<div class="empty-state" style="padding:20px"><p>No active events</p></div>'
-    : activeEvents.map(ev=>{
-        const units=Object.values(ev.stock||{}).reduce((s,v)=>s+v,0);
-        const skus=Object.keys(ev.stock||{}).length;
-        return `<div class="stock-item" onclick="openEventDetail('${ev.id}')" style="cursor:pointer"><div><div class="stock-name">${ev.name}</div><div class="stock-variant">${ev.date||''} · ${skus} SKUs</div></div><div class="stock-qty warn">${units} units</div></div>`;
+    : lowItems.slice(0,6).map(p=>{
+        const qCls=p.homeQty===0?'low':'warn';
+        return `<div class="stock-item"><div><div class="stock-name">${p.name}</div><div class="stock-variant">${p.variant||p.sku}</div></div><div class="stock-qty ${qCls}">${p.homeQty}</div></div>`;
       }).join('');
 
   const tl = document.getElementById('recent-tx-list');
@@ -619,10 +555,10 @@ function renderDashboard() {
   tl.innerHTML = recent.length===0
     ? '<div class="empty-state" style="padding:20px"><p>No transactions yet</p></div>'
     : recent.map(t=>{
-        const icons={sale:'<svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>',restock:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',adjust:'<svg viewBox="0 0 24 24"><path d="M12 20V4M4 12h16"/></svg>',pack:'<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>',unpack:'<svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'};
-        const typeClass=t.type==='sale'?'sale':['restock','unpack'].includes(t.type)?'restock':t.type==='pack'?'pack':'adjust';
-        const qtyStr=t.type==='sale'?`−${t.qty}`:`+${t.qty}`;
-        const qtyClass=t.type==='sale'?'neg':t.type==='pack'?'move':'pos';
+        const icons={sale:'<svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>',restock:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',adjust:'<svg viewBox="0 0 24 24"><path d="M12 20V4M4 12h16"/></svg>'};
+        const typeClass=t.type==='sale'?'sale':t.type==='restock'?'restock':'adjust';
+        const qtyStr=t.type==='sale'?`−${t.qty}`:t.type==='restock'?`+${t.qty}`:`${t.qty}`;
+        const qtyClass=t.type==='sale'?'neg':'pos';
         const time=new Date(t.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
         return `<div class="tx-item"><div class="tx-icon ${typeClass}">${icons[t.type]||icons.adjust}</div><div class="tx-info"><div class="tx-name">${t.name}</div><div class="tx-meta">${t.variant||''} · ${t.type} · ${time}</div></div><div class="tx-qty ${qtyClass}">${qtyStr}</div></div>`;
       }).join('');
@@ -636,7 +572,7 @@ function renderProductList(filter='') {
     ? '<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg><p>No products yet.<br>Add your first product above.</p></div>'
     : filtered.map(p=>{
         const hCls=p.homeQty===0?'zero':p.homeQty<=p.threshold?'event':'home';
-        return `<div class="product-item" onclick="openProductDetail('${p.sku}')"><div class="product-thumb"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="product-info"><div class="product-name">${p.name}</div><div class="product-sub">${p.variant||''} · ${p.sku}</div></div><div class="product-stock-col"><span class="mini-badge ${hCls}">🏠 ${p.homeQty}</span>${(p.eventQty||0)>0?`<span class="mini-badge event">⚔ ${p.eventQty}</span>`:''}</div></div>`;
+        return `<div class="product-item" onclick="openProductDetail('${p.sku}')"><div class="product-thumb"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><div class="product-info"><div class="product-name">${p.name}</div><div class="product-sub">${p.variant||''} · ${p.sku}</div></div><div class="product-stock-col"><span class="mini-badge ${hCls}">${p.homeQty}</span></div></div>`;
       }).join('');
 }
 function filterProducts(val){renderProductList(val);}
@@ -670,8 +606,6 @@ function openProductDetail(sku) {
   document.getElementById('detail-product-name').textContent=p.name;
   document.getElementById('detail-variant').textContent=p.variant?`${p.variant} · ${p.sku}`:p.sku;
   document.getElementById('detail-home-qty').textContent=p.homeQty;
-  document.getElementById('detail-event-qty').textContent=p.eventQty||0;
-  document.getElementById('detail-total-qty').textContent=(p.homeQty||0)+(p.eventQty||0);
   document.getElementById('edit-name').value=p.name;
   document.getElementById('edit-variant').value=p.variant||'';
   document.getElementById('edit-threshold').value=p.threshold;
@@ -682,9 +616,14 @@ function openProductDetail(sku) {
 }
 
 function showDetailTab(tab) {
-  ['info','edit','qr'].forEach(t=>document.getElementById('detail-'+t).style.display=t===tab?'block':'none');
+  ['info','set','edit','qr'].forEach(t=>document.getElementById('detail-'+t).style.display=t===tab?'block':'none');
   document.querySelectorAll('#product-detail-modal .detail-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   if(tab==='qr') renderDetailQR();
+  if(tab==='set'){
+    const p=APP.detailProduct; if(!p) return;
+    document.getElementById('set-home-qty').value=p.homeQty;
+    document.getElementById('set-reason').value='';
+  }
 }
 
 function renderDetailQR() {
@@ -707,6 +646,48 @@ function downloadDetailQR() {
   link.click();
 }
 
+// Generate a printable sheet of every product's QR code (name + variant + SKU
+// under each), laid out in a grid for printing and cutting into bin labels.
+async function printAllQRCodes() {
+  if(APP.products.length===0){showToast('No products to print','info');return;}
+  showToast('Building QR sheet…','info');
+  // Generate all QR data URLs first (async)
+  const cells=[];
+  for(const p of APP.products){
+    try{
+      const dataUrl=await QRCode.toDataURL(p.qrId||p.sku,{width:240,margin:1,color:{dark:'#1A1A1A',light:'#FFFFFF'}});
+      const label=`${escapeHtml(p.name)}${p.variant?' — '+escapeHtml(p.variant):''}`;
+      cells.push(`<div class="qr-cell"><img src="${dataUrl}" alt=""><div class="qr-name">${label}</div><div class="qr-sku">${escapeHtml(p.sku)}</div></div>`);
+    }catch(e){console.error('QR failed for',p.sku,e);}
+  }
+  const win=window.open('','_blank');
+  if(!win){showToast('Allow pop-ups to print','error');return;}
+  win.document.write(`<!DOCTYPE html><html><head><title>Mythikos Forge — QR Codes</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:16px;background:#fff;color:#1A1A1A}
+      h1{font-size:16px;margin-bottom:4px}
+      .sub{font-size:12px;color:#666;margin-bottom:16px}
+      .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+      .qr-cell{border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center;page-break-inside:avoid}
+      .qr-cell img{width:100%;max-width:150px;height:auto;display:block;margin:0 auto 6px}
+      .qr-name{font-size:11px;font-weight:600;line-height:1.3}
+      .qr-sku{font-size:10px;color:#666;font-family:monospace;margin-top:2px}
+      @media print{.no-print{display:none}body{padding:0}}
+      .btn{display:inline-block;margin-bottom:16px;padding:10px 18px;background:#5B2D8E;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer}
+    </style></head><body>
+    <h1>Mythikos Forge — Product QR Codes</h1>
+    <div class="sub">${cells.length} variant${cells.length===1?'':'s'} · Print, cut, and attach to bins</div>
+    <button class="btn no-print" onclick="window.print()">Print</button>
+    <div class="grid">${cells.join('')}</div>
+    </body></html>`);
+  win.document.close();
+  showToast(`${cells.length} QR codes ready`,'success');
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+
 function closeProductDetailModal(e){if(!e||e.target===document.getElementById('product-detail-modal'))document.getElementById('product-detail-modal').classList.remove('open');}
 
 function saveProductEdit() {
@@ -723,6 +704,38 @@ function saveProductEdit() {
   apiCall('POST','/sync',{type:'product_updated',product:p});
 }
 
+function saveSetCount() {
+  const p=APP.detailProduct; if(!p) return;
+  const newQty=parseInt(document.getElementById('set-home-qty').value);
+  if(isNaN(newQty)||newQty<0){showToast('Enter a valid count','error');return;}
+  const reason=document.getElementById('set-reason').value.trim();
+  const oldQty=p.homeQty;
+  if(newQty===oldQty){showToast('No change','info');showDetailTab('info');return;}
+
+  // Update canonical local record
+  p.homeQty=newQty;
+
+  // Log an adjust transaction locally
+  const adjId=genId();
+  APP.transactions.push({timestamp:new Date().toISOString(),sku:p.sku,name:p.name,variant:p.variant,type:'adjust',qty:Math.abs(newQty-oldQty),bucket:'home',platform:'manual',notes:`${reason||'Set count'} (${oldQty}→${newQty})`,user:APP.settings.username||'User'});
+  saveLocalData();
+
+  // Refresh displays
+  document.getElementById('detail-home-qty').textContent=p.homeQty;
+  renderProductList(); renderDashboard();
+  showDetailTab('info');
+  showToast(`${p.name} set to ${newQty}`,'success');
+
+  // Push absolute count to backend + platforms (queued, idempotent via adjId)
+  apiCall('POST','/adjust',{
+    sku:p.sku,name:p.name,variant:p.variant,
+    newHomeQty:newQty,newEventQty:0,
+    reason:reason||'Set count',user:APP.settings.username||'User',
+    adjId,
+    product:{sku:p.sku,sqId:p.sqId,etsyId:p.etsyId,tiktokId:p.tiktokId},
+  });
+}
+
 function archiveProduct() {
   const p=APP.detailProduct; if(!p) return;
   if(!confirm(`Archive "${p.name}"?`)) return;
@@ -734,22 +747,12 @@ function archiveProduct() {
   apiCall('POST','/sync',{type:'product_archived',sku:p.sku});
 }
 
-function packFromDetail() {
-  closeProductDetailModal();
-  const active=APP.events.filter(e=>e.status==='active');
-  if(active.length===0){showToast('No active events. Create one first.','error');showView('events');return;}
-  if(active.length===1){openEventDetail(active[0].id);setTimeout(()=>showEventTab('epack'),300);}
-  else{showView('events');showToast('Select which event to pack for','info');}
-}
-
 // ── SCAN ──
 function setScanMode(mode) {
-  APP.scanMode=mode;
-  document.getElementById('mode-sale').classList.toggle('active',mode==='sale');
-  document.getElementById('mode-restock').classList.toggle('active',mode==='restock');
+  // App is inventory-only; scanning is always a restock/add action.
+  APP.scanMode='restock';
   const btn=document.getElementById('scan-btn');
-  btn.className=mode==='sale'?'sale-btn':'restock-btn';
-  btn.textContent='Start Scanner';
+  if(btn){btn.className='restock-btn';btn.textContent=APP.scanning?'Stop Scanner':'Start Scanner';}
 }
 
 function startScan() {
@@ -795,16 +798,19 @@ function handleScanResult(data) {
 }
 
 function openScanModal(product) {
-  APP.modalProduct=product; APP.modalQty=1;
-  document.getElementById('modal-product-name').textContent=product.name;
-  document.getElementById('modal-variant').textContent=product.variant||product.sku;
-  document.getElementById('modal-home-qty').textContent=product.homeQty;
-  document.getElementById('modal-event-qty').textContent=product.eventQty||0;
+  // Always operate on the canonical product in APP.products, never a passed-in
+  // copy (the manual-entry list passes a JSON copy). Resolving by SKU here means
+  // confirmScan's quantity edits hit the real record that gets saved + rendered.
+  const real = APP.products.find(x=>x.sku===product.sku);
+  if(!real){showToast('Product not found','error');return;}
+  APP.modalProduct=real; APP.modalQty=1;
+  document.getElementById('modal-product-name').textContent=real.name;
+  document.getElementById('modal-variant').textContent=real.variant||real.sku;
+  document.getElementById('modal-home-qty').textContent=real.homeQty;
   document.getElementById('modal-qty').textContent=1;
-  document.getElementById('modal-bucket').value='home';
   const btn=document.getElementById('modal-confirm-btn');
-  btn.className='modal-confirm-btn '+(APP.scanMode==='sale'?'sale':'restock');
-  btn.textContent=APP.scanMode==='sale'?'Confirm Sale':'Confirm Restock';
+  btn.className='modal-confirm-btn restock';
+  btn.textContent='Confirm Restock';
   document.getElementById('scan-modal').classList.add('open');
 }
 
@@ -814,149 +820,30 @@ function adjustModalQty(delta){APP.modalQty=Math.max(1,APP.modalQty+delta);docum
 function confirmScan() {
   const p=APP.modalProduct; if(!p) return;
   const qty=APP.modalQty;
-  const bucket=document.getElementById('modal-bucket').value;
-  const isSale=APP.scanMode==='sale';
-  if(isSale){
-    if(bucket==='home'&&p.homeQty<qty){showToast('Not enough home stock!','error');return;}
-    if(bucket==='event'&&(p.eventQty||0)<qty){showToast('Not enough event stock!','error');return;}
-    if(bucket==='home') p.homeQty-=qty;
-    else p.eventQty=(p.eventQty||0)-qty;
-  } else {
-    if(bucket==='home') p.homeQty+=qty;
-    else p.eventQty=(p.eventQty||0)+qty;
-  }
-  const tx={timestamp:new Date().toISOString(),sku:p.sku,name:p.name,variant:p.variant,type:APP.scanMode,qty,bucket,platform:'manual',notes:'',user:APP.settings.username||'User'};
+  // Inventory-only app: a scan always ADDS stock (restock). Sales never originate here.
+  p.homeQty+=qty;
+  const tx={timestamp:new Date().toISOString(),sku:p.sku,name:p.name,variant:p.variant,type:'restock',qty,bucket:'home',platform:'manual',notes:'',user:APP.settings.username||'User'};
   APP.transactions.push(tx);
   saveLocalData();
   closeScanModal();
-  if(p.homeQty===0&&isSale) showToast(`🚨 ${p.name} home stock is now 0!`,'warn');
-  else showToast(`${isSale?'−':'+'}${qty} ${p.name} (${bucket})`,isSale?'error':'success');
-  renderDashboard();
+  showToast(`+${qty} ${p.name}`,'success');
+  renderDashboard(); renderProductList();
+  // refresh the manual-entry list too if it's showing results
+  const ms=document.getElementById('manual-search');
+  if(ms&&ms.value) filterManualProducts(ms.value);
   apiCall('POST','/transaction',{transaction:tx,products:[{sku:p.sku,sqId:p.sqId,etsyId:p.etsyId,tiktokId:p.tiktokId}]});
+}
+
+function openScanModalBySku(sku){
+  const p=APP.products.find(x=>x.sku===sku);
+  if(p) openScanModal(p);
 }
 
 function filterManualProducts(val) {
   const list=document.getElementById('manual-product-list');
   if(!val){list.innerHTML='';return;}
   const filtered=APP.products.filter(p=>p.name.toLowerCase().includes(val.toLowerCase())||p.sku.toLowerCase().includes(val.toLowerCase())).slice(0,5);
-  list.innerHTML=filtered.map(p=>`<div class="product-item" style="margin-bottom:6px" onclick="openScanModal(${JSON.stringify(p).replace(/"/g,'&quot;')})"><div class="product-info"><div class="product-name">${p.name}</div><div class="product-sub">${p.variant||p.sku}</div></div><div class="product-stock-col"><span class="mini-badge home">🏠 ${p.homeQty}</span>${(p.eventQty||0)>0?`<span class="mini-badge event">⚔ ${p.eventQty}</span>`:''}</div></div>`).join('');
-}
-
-// ── EVENTS ──
-function renderEventsList() {
-  const active=APP.events.filter(e=>e.status==='active');
-  const past=APP.events.filter(e=>e.status!=='active');
-  document.getElementById('active-events-list').innerHTML=active.length===0
-    ? '<div class="empty-state" style="padding:24px"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><p>No active events</p></div>'
-    : active.map(eventCardHTML).join('');
-  document.getElementById('past-events-list').innerHTML=past.length===0
-    ? '<div class="empty-state" style="padding:20px"><p>No past events yet</p></div>'
-    : past.map(eventCardHTML).join('');
-}
-
-function eventCardHTML(ev) {
-  const units=Object.values(ev.stock||{}).reduce((s,v)=>s+v,0);
-  const skus=Object.keys(ev.stock||{}).length;
-  return `<div class="event-card" onclick="openEventDetail('${ev.id}')"><div class="event-card-header"><div class="event-name">${ev.name}</div><div class="event-status-pill ${ev.status}">${ev.status}</div></div><div class="event-meta">${ev.date||''}${ev.location?' · '+ev.location:''}</div><div class="event-stock-summary"><div class="event-stock-chip"><div class="event-stock-chip-val">${skus}</div><div class="event-stock-chip-label">SKUs</div></div><div class="event-stock-chip"><div class="event-stock-chip-val">${units}</div><div class="event-stock-chip-label">Units</div></div></div></div>`;
-}
-
-function showCreateEvent(){document.getElementById('create-event-modal').classList.add('open');}
-function closeCreateEventModal(e){if(!e||e.target===document.getElementById('create-event-modal'))document.getElementById('create-event-modal').classList.remove('open');}
-
-function saveNewEvent() {
-  const name=document.getElementById('new-event-name').value.trim();
-  const date=document.getElementById('new-event-date').value;
-  const location=document.getElementById('new-event-location').value.trim();
-  if(!name){showToast('Event name required','error');return;}
-  const ev={id:'evt_'+Date.now(),name,date,location,status:'active',stock:{},created:new Date().toISOString()};
-  APP.events.push(ev);
-  saveLocalData(); closeCreateEventModal(); renderEventsList(); renderDashboard();
-  showToast(`${name} created`,'success');
-}
-
-function openEventDetail(id) {
-  const ev=APP.events.find(e=>e.id===id); if(!ev) return;
-  APP.detailEvent=ev;
-  document.getElementById('event-detail-name').textContent=ev.name;
-  document.getElementById('event-detail-meta').textContent=`${ev.date||''}${ev.location?' · '+ev.location:''}`;
-  showEventTab('estock');
-  document.getElementById('event-detail-modal').classList.add('open');
-}
-
-function closeEventDetailModal(e){if(!e||e.target===document.getElementById('event-detail-modal'))document.getElementById('event-detail-modal').classList.remove('open');}
-
-function showEventTab(tab) {
-  ['estock','epack','eclose'].forEach(t=>document.getElementById('event-tab-'+t).style.display=t===tab?'block':'none');
-  document.querySelectorAll('#event-detail-modal .detail-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  if(tab==='estock') renderEventStock();
-  if(tab==='epack') renderPackItems();
-  if(tab==='eclose') renderCloseEventSummary();
-}
-
-function renderEventStock() {
-  const ev=APP.detailEvent;
-  const skus=Object.keys(ev.stock||{});
-  document.getElementById('event-stock-list').innerHTML=skus.length===0
-    ? '<div class="empty-state" style="padding:20px"><p>No items packed yet.<br>Use Pack tab to add items.</p></div>'
-    : skus.map(sku=>{
-        const p=APP.products.find(x=>x.sku===sku);
-        const qty=ev.stock[sku];
-        return `<div class="pack-item"><div class="pack-item-info"><div class="pack-item-name">${p?p.name:sku}</div><div class="pack-item-sub">${p?(p.variant||p.sku):''}</div></div><div class="stock-qty ${qty===0?'low':'warn'}">${qty}</div></div>`;
-      }).join('');
-}
-
-function renderPackItems() {
-  const ev=APP.detailEvent;
-  document.getElementById('pack-items-list').innerHTML=APP.products.length===0
-    ? '<div class="empty-state" style="padding:20px"><p>No products added yet.</p></div>'
-    : APP.products.map(p=>`<div class="pack-item"><div class="pack-item-info"><div class="pack-item-name">${p.name}</div><div class="pack-item-sub">${p.variant||p.sku}</div></div><div class="pack-item-home">🏠 ${p.homeQty}</div><input class="pack-qty-input" type="number" min="0" max="${p.homeQty}" placeholder="0" id="pack-qty-${p.sku}" value="${ev.stock[p.sku]||0}"></div>`).join('');
-}
-
-function submitPackItems() {
-  const ev=APP.detailEvent;
-  const now=new Date().toISOString();
-  let count=0;
-  APP.products.forEach(p=>{
-    const input=document.getElementById('pack-qty-'+p.sku); if(!input) return;
-    const newQty=parseInt(input.value)||0;
-    const prevQty=ev.stock[p.sku]||0;
-    const delta=newQty-prevQty;
-    if(delta===0) return;
-    if(delta>0&&p.homeQty<delta){showToast(`Not enough home stock for ${p.name}`,'error');return;}
-    p.homeQty-=delta;
-    p.eventQty=(p.eventQty||0)+delta;
-    ev.stock[p.sku]=newQty;
-    APP.transactions.push({timestamp:now,sku:p.sku,name:p.name,variant:p.variant,type:delta>0?'pack':'unpack',qty:Math.abs(delta),bucket:'event',platform:'local',notes:`Event: ${ev.name}`,user:APP.settings.username||'User'});
-    count++;
-  });
-  if(count>0){saveLocalData();renderEventStock();renderDashboard();showToast(`${count} product(s) packed`,'success');showEventTab('estock');}
-  else showToast('No changes made','info');
-}
-
-function renderCloseEventSummary() {
-  const ev=APP.detailEvent;
-  const skus=Object.keys(ev.stock||{});
-  document.getElementById('close-event-summary').innerHTML=skus.length===0
-    ? '<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">No stock to return.</p>'
-    : '<div class="card" style="margin-bottom:16px">'+skus.map(sku=>{
-        const p=APP.products.find(x=>x.sku===sku);
-        return `<div class="pack-item"><div class="pack-item-info"><div class="pack-item-name">${p?p.name:sku}</div></div><div style="font-size:13px;color:var(--text-muted)">Return ${ev.stock[sku]} → 🏠</div></div>`;
-      }).join('')+'</div>';
-}
-
-function closeEvent() {
-  const ev=APP.detailEvent; if(!ev) return;
-  const now=new Date().toISOString();
-  Object.entries(ev.stock||{}).forEach(([sku,qty])=>{
-    if(qty<=0) return;
-    const p=APP.products.find(x=>x.sku===sku); if(!p) return;
-    p.homeQty+=qty;
-    p.eventQty=Math.max(0,(p.eventQty||0)-qty);
-    APP.transactions.push({timestamp:now,sku,name:p.name,variant:p.variant,type:'unpack',qty,bucket:'home',platform:'local',notes:`Event closed: ${ev.name}`,user:APP.settings.username||'User'});
-  });
-  ev.status='closed'; ev.closedAt=now; ev.stock={};
-  saveLocalData(); closeEventDetailModal(); renderEventsList(); renderDashboard();
-  showToast(`${ev.name} closed, stock returned home`,'success');
+  list.innerHTML=filtered.map(p=>`<div class="product-item" style="margin-bottom:6px" onclick="openScanModalBySku('${p.sku}')"><div class="product-info"><div class="product-name">${p.name}</div><div class="product-sub">${p.variant||p.sku}</div></div><div class="product-stock-col"><span class="mini-badge ${p.homeQty===0?'zero':'home'}">${p.homeQty}</span></div></div>`).join('');
 }
 
 // ── SYNC ──
@@ -1000,11 +887,10 @@ function applyPulledOrders(orders) {
   orders.forEach(order=>{
     const p=APP.products.find(x=>x.sqId===order.variantId||x.etsyId===order.listingOfferingId);
     if(!p) return;
-    const bucket=order.channel==='point_of_sale'?'event':'home';
-    if(bucket==='event') p.eventQty=Math.max(0,(p.eventQty||0)-order.qty);
-    else p.homeQty=Math.max(0,p.homeQty-order.qty);
-    APP.transactions.push({timestamp:order.createdAt||new Date().toISOString(),sku:p.sku,name:p.name,variant:p.variant,type:'sale',qty:order.qty,bucket,platform:order.platform||'squarespace',notes:`Order ${order.orderId}`,user:'sync'});
-    if(p.homeQty===0) showToast(`🚨 ${p.name} home stock hit 0 from sync`,'warn');
+    // Single inventory: every sale (online or POS) decrements the one count.
+    p.homeQty=Math.max(0,p.homeQty-order.qty);
+    APP.transactions.push({timestamp:order.createdAt||new Date().toISOString(),sku:p.sku,name:p.name,variant:p.variant,type:'sale',qty:order.qty,bucket:'home',platform:order.platform||'squarespace',notes:`Order ${order.orderId}`,user:'sync'});
+    if(p.homeQty===0) showToast(`🚨 ${p.name} hit 0 from sync`,'warn');
   });
 }
 
@@ -1106,6 +992,32 @@ function updatePlatformDots() {
 }
 
 // ── SETTINGS ──
+function resetLocalData() {
+  // Warn if there are unsent writes — wiping now would lose them.
+  const pending=loadOutbox().length;
+  const warn=pending>0
+    ? `\n\n⚠ ${pending} change(s) haven't synced yet and will be LOST.`
+    : '';
+  if(!confirm(`Reset local data on this device?\n\nThis clears all products and history stored here. Your Google Sheet and Squarespace are NOT affected.${warn}`)) return;
+  // Second confirmation for a destructive action
+  if(!confirm('Are you sure? This cannot be undone on this device.')) return;
+
+  // Clear data keys but PRESERVE settings (worker URL, name, etc.) and platform status
+  localStorage.removeItem('mf_products');
+  localStorage.removeItem('mf_transactions');
+  localStorage.removeItem('mf_synclog');
+  localStorage.removeItem('mf_lastsync');
+  localStorage.removeItem('mf_outbox');
+
+  // Reset in-memory state
+  APP.products=[]; APP.transactions=[]; APP.syncLog=[]; APP.lastSync=null;
+
+  renderDashboard(); renderProductList(); renderSyncLog();
+  updateQueueBadge();
+  showToast('Local data cleared — re-import from Squarespace on the Sync screen','success');
+  showView('sync');
+}
+
 function saveSettings() {
   APP.settings={
     username:document.getElementById('setting-username').value.trim(),
