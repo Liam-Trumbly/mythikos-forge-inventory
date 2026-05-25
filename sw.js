@@ -1,7 +1,7 @@
 // Mythikos Forge — Service Worker
 // Caches the app shell so the app opens even with no signal (e.g. at events).
 // Bump CACHE_VERSION whenever you change the HTML or want to force a refresh.
-const CACHE_VERSION = 'mf-v6'; // Bumped version to force a clean update
+const CACHE_VERSION = 'mf-v7'; // QR/jsQR now bundled locally (CDN URLs were 404)
 
 // Absolute URLs relative to the domain root for stable subfolder hosting.
 const APP_SHELL = [
@@ -12,9 +12,9 @@ const APP_SHELL = [
   '/mythikos-forge-inventory/icon-512.png',
   '/mythikos-forge-inventory/apple-touch-icon.png',
   '/mythikos-forge-inventory/header-logo.png',
-  // CDN libraries the app needs to function offline:
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.4/qrcode.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js',
+  // QR libraries bundled locally so they always load (and work offline):
+  '/mythikos-forge-inventory/qrcode.min.js',
+  '/mythikos-forge-inventory/jsQR.min.js',
 ];
 
 // On install, pre-cache the shell. Individual failures (e.g. a CDN hiccup)
