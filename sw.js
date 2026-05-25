@@ -1,12 +1,12 @@
 // Mythikos Forge — Service Worker
 // Caches the app shell so the app opens even with no signal (e.g. at events).
 // Bump CACHE_VERSION whenever you change the HTML or want to force a refresh.
-const CACHE_VERSION = 'mf-v4'; // Bumped version to force a clean update
+const CACHE_VERSION = 'mf-v3'; // Bumped version to force a clean update
 
 // Absolute URLs relative to the domain root for stable subfolder hosting.
 const APP_SHELL = [
   '/mythikos-forge-inventory/',
-  '/mythikos-forge-inventory/index.html', // Fixed filename from image_2a3296.png
+  '/mythikos-forge-inventory/index.html',
   '/mythikos-forge-inventory/manifest.json',
   '/mythikos-forge-inventory/icon-192.png',
   '/mythikos-forge-inventory/icon-512.png',
