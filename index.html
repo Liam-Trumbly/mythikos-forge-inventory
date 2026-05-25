@@ -287,6 +287,11 @@
       <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
       Sync with Square
     </button>
+    <div class="card" id="queue-status-card" style="display:none;border-color:var(--warning)">
+      <div class="card-title" style="color:var(--warning)">Pending Changes</div>
+      <div id="queue-status-text" style="font-size:13px;color:var(--text-muted);line-height:1.5"></div>
+      <button class="save-btn" style="margin-top:12px;margin-bottom:0" onclick="retryQueueNow()">Retry Now</button>
+    </div>
     <div class="card">
       <div class="card-title">Platform Status</div>
       <div class="platform-row">
@@ -334,6 +339,10 @@
     <button class="save-btn" onclick="saveSettings()">Save Settings</button>
 
     <div class="settings-label" style="margin-top:20px;color:var(--danger)">Danger Zone</div>
+    <div class="card" style="margin-bottom:12px;border-color:var(--danger)">
+      <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Clear stuck items waiting to sync (the "queued" counter). Use this if the queue is jammed — your products stay; only the pending write-queue is emptied.</p>
+      <button class="save-btn secondary" style="margin-top:12px;margin-bottom:0" onclick="clearSyncQueue()">Clear Sync Queue</button>
+    </div>
     <div class="card" style="margin-bottom:12px;border-color:var(--danger)">
       <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Clears all products and history stored on <b>this device only</b>. Your Google Sheet and Squarespace are untouched. Use this before re-importing fresh from Squarespace.</p>
       <button class="save-btn danger-btn" style="margin-top:12px;margin-bottom:0" onclick="resetLocalData()">Reset Local Data</button>
@@ -456,6 +465,18 @@
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — edit these two values once, here, then everyone's devices
+// pick them up automatically (no typing in Settings on each phone).
+// Note: this repo is public, so these are visible. That's fine — the
+// real secrets (Google + Squarespace keys) live in Cloudflare, not here.
+// You can still override these per-device in Settings if ever needed.
+// ═══════════════════════════════════════════════════════════════
+const CONFIG = {
+  workerUrl: 'https://forge-inventory.ldtrumbly.workers.dev',   // ← paste your Cloudflare Worker URL
+  sheetId:   '1R-4IHASesQM78X0KKg5IM5q6pZlgjhDepCCKoxICCZw',    // ← (optional) paste your Google Sheet ID
+};
+
 const APP = {
   currentView:'dashboard', scanMode:'restock', scanning:false, scanStream:null, scanAnimFrame:null,
   modalProduct:null, modalQty:1, detailProduct:null,
@@ -479,6 +500,10 @@ function init() {
 function loadSettings() {
   const s = localStorage.getItem('mf_settings');
   APP.settings = s ? JSON.parse(s) : {username:'Liam',threshold:5,workerUrl:'',sheetId:''};
+  // Fall back to hardcoded CONFIG so fresh devices work with no typing.
+  // Saved (non-empty) values always win, so per-device overrides still hold.
+  if(!APP.settings.workerUrl) APP.settings.workerUrl = CONFIG.workerUrl || '';
+  if(!APP.settings.sheetId)   APP.settings.sheetId   = CONFIG.sheetId   || '';
   APP.platformStatus = JSON.parse(localStorage.getItem('mf_platformstatus')||'{}');
   if (APP.settings.username) document.getElementById('user-badge-btn').textContent = APP.settings.username.charAt(0).toUpperCase();
   document.getElementById('setting-username').value = APP.settings.username||'';
@@ -948,27 +973,45 @@ function renderImportPreview(products) {
     </div>`).join('');
 }
 
-function confirmImport() {
+async function confirmImport() {
   const products=APP.importPreview||[];
-  let added=0;
+  const toAdd=[];
   products.forEach((sp,i)=>{
     const cb=document.getElementById('imp-'+i);
     if(!cb||!cb.checked) return;
-    APP.products.push({
+    const prod={
       sku:sp.sku||sp.variantId,name:sp.name,variant:sp.variant||'',
       homeQty:sp.qty||0,eventQty:0,threshold:APP.settings.threshold||5,
       sqId:sp.variantId,etsyId:'',tiktokId:'',
       qrId:sp.sku||sp.variantId,active:true,created:new Date().toISOString()
-    });
-    added++;
+    };
+    APP.products.push(prod);
+    toAdd.push(prod);
   });
   saveLocalData();
-  renderProductList();
+  renderProductList(); renderDashboard();
   document.getElementById('import-preview-modal').classList.remove('open');
   const refreshedNote=APP.importRefreshedCount>0?` · refreshed ${APP.importRefreshedCount}`:'';
-  showToast(`Imported ${added} product${added===1?'':'s'}${refreshedNote}`,'success');
-  // Sync all to Sheets
-  APP.products.slice(-added).forEach(p=>apiCall('POST','/sync',{type:'product_added',product:p}));
+  showToast(`Added ${toAdd.length} product${toAdd.length===1?'':'s'}${refreshedNote} — saving…`,'info');
+
+  // Send ALL new products to the Sheet in ONE batched call (reads sheets once,
+  // writes in bulk). This avoids the per-product flood that stalled the queue.
+  if(toAdd.length===0) return;
+  try{
+    const res=await fetch(APP.settings.workerUrl+'/batch-import',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({products:toAdd}),
+    }).then(r=>r.ok?r.json():Promise.reject(new Error('HTTP '+r.status)));
+    if(res&&res.ok){
+      showToast(`Saved to Sheet — ${res.added} added, ${res.updated} updated`,'success');
+      addSyncLog(`Batch import: ${res.added} added, ${res.updated} updated`,'ok');
+    }else throw new Error(res?.error||'Unknown error');
+  }catch(e){
+    // Fall back to the durable queue so nothing is lost if the batch call fails.
+    addSyncLog('Batch import failed, queuing individually: '+e.message,'err');
+    showToast('Saving in background…','info');
+    toAdd.forEach(p=>apiCall('POST','/sync',{type:'product_added',product:p}));
+  }
 }
 
 function closeImportPreviewModal(e) {
@@ -1015,6 +1058,16 @@ function updatePlatformDots() {
 }
 
 // ── SETTINGS ──
+function clearSyncQueue() {
+  const n=loadOutbox().length;
+  if(n===0){showToast('Queue is already empty','info');return;}
+  if(!confirm(`Clear ${n} item(s) waiting to sync?\n\nYour products stay. Only the pending write-queue is emptied. Use this if the queue is stuck.`)) return;
+  localStorage.removeItem('mf_outbox');
+  nextRetryAt=0;
+  updateQueueBadge();
+  showToast('Sync queue cleared','success');
+}
+
 function resetLocalData() {
   // Warn if there are unsent writes — wiping now would lose them.
   const pending=loadOutbox().length;
@@ -1101,10 +1154,12 @@ function queueWrite(method,path,body){
 }
 
 let flushing=false;
+let nextRetryAt=0; // timestamp before which we won't retry (backoff)
 async function flushOutbox(){
   if(flushing) return;
   if(!APP.settings.workerUrl) return; // nothing to flush to yet
   if(typeof navigator!=='undefined'&&navigator.onLine===false) return;
+  if(Date.now()<nextRetryAt) return; // in backoff window, wait
   const q=loadOutbox();
   if(q.length===0){updateQueueBadge();return;}
   flushing=true;
@@ -1120,12 +1175,19 @@ async function flushOutbox(){
         // success — drop it
         q.shift();
         saveOutbox(q);
+        nextRetryAt=0; // reset backoff on any success
         updateQueueBadge();
+        // Gentle throttle between writes so we don't trip Google Sheets
+        // rate limits when draining a big batch (e.g. a full import).
+        if(q.length) await new Promise(r=>setTimeout(r,350));
       }catch(e){
         item.attempts=(item.attempts||0)+1;
         item.lastError=e.message;
         saveOutbox(q);
-        // leave it at the head of the queue; try again later
+        // Exponential backoff: wait longer after each failure (caps at 60s),
+        // so a rate-limited or erroring item doesn't hammer the worker.
+        const backoff=Math.min(60000, 2000*Math.pow(2, Math.min(item.attempts-1,5)));
+        nextRetryAt=Date.now()+backoff;
         break;
       }
     }
