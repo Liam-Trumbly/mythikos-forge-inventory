@@ -10,7 +10,7 @@
 <title>Mythikos Forge — Inventory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.4/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <style>
   :root {
@@ -350,10 +350,9 @@
       <div class="settings-field"><label>Google Sheet ID</label><input type="text" id="setting-sheet-id" placeholder="Paste Sheet ID here"></div>
     </div>
     <div class="settings-label">Platforms</div>
-    <div class="card" style="padding-bottom:4px;margin-bottom:12px">
-      <div class="settings-field"><label>Squarespace API Key</label><input type="password" id="setting-sq-key" placeholder="••••••••"></div>
-      <div class="settings-field"><label>Etsy API Key</label><input type="password" id="setting-etsy-key" placeholder="••••••••"></div>
-      <div class="settings-field"><label>TikTok Shop API Key</label><input type="password" id="setting-tiktok-key" placeholder="••••••••"></div>
+    <div class="card" style="margin-bottom:12px">
+      <p style="font-size:13px;color:var(--text-muted);line-height:1.5">API keys for Squarespace, Etsy, and TikTok live securely in your Cloudflare Worker (Settings → Variables and Secrets), never in this app or your phone. The dots below reflect what the Worker reports — use <b>Test Connection</b> to refresh.</p>
+      <button class="save-btn secondary" style="margin-top:12px;margin-bottom:0" onclick="testConnection()">Test Connection</button>
     </div>
     <button class="save-btn" onclick="saveSettings()">Save Settings</button>
     <button class="save-btn secondary" onclick="testConnection()">Test Connection</button>
@@ -518,28 +517,33 @@
 const APP = {
   currentView:'dashboard', scanMode:'sale', scanning:false, scanStream:null, scanAnimFrame:null,
   modalProduct:null, modalQty:1, detailProduct:null, detailEvent:null,
-  settings:{}, products:[], events:[], transactions:[], syncLog:[], lastSync:null,
+  settings:{}, platformStatus:{}, products:[], events:[], transactions:[], syncLog:[], lastSync:null,
 };
 
 // ── INIT ──
 function init() {
   loadSettings(); loadLocalData();
   renderDashboard(); renderProductList(); renderEventsList(); renderSyncLog();
-  updatePlatformDots();
+  updatePlatformDots(); updateQueueBadge();
   document.getElementById('new-event-date').value = new Date().toISOString().split('T')[0];
+
+  // Outbox retry triggers: on reconnect, on tab refocus, and every 30s.
+  window.addEventListener('online', ()=>{updateQueueBadge();flushOutbox();});
+  window.addEventListener('offline', updateQueueBadge);
+  document.addEventListener('visibilitychange', ()=>{if(!document.hidden) flushOutbox();});
+  setInterval(flushOutbox, 30000);
+  flushOutbox(); // attempt on startup
 }
 
 function loadSettings() {
   const s = localStorage.getItem('mf_settings');
-  APP.settings = s ? JSON.parse(s) : {username:'Liam',threshold:5,workerUrl:'',sheetId:'',sqKey:'',etsyKey:'',tiktokKey:''};
+  APP.settings = s ? JSON.parse(s) : {username:'Liam',threshold:5,workerUrl:'',sheetId:''};
+  APP.platformStatus = JSON.parse(localStorage.getItem('mf_platformstatus')||'{}');
   if (APP.settings.username) document.getElementById('user-badge-btn').textContent = APP.settings.username.charAt(0).toUpperCase();
   document.getElementById('setting-username').value = APP.settings.username||'';
   document.getElementById('setting-threshold').value = APP.settings.threshold||5;
   document.getElementById('setting-worker-url').value = APP.settings.workerUrl||'';
   document.getElementById('setting-sheet-id').value = APP.settings.sheetId||'';
-  document.getElementById('setting-sq-key').value = APP.settings.sqKey||'';
-  document.getElementById('setting-etsy-key').value = APP.settings.etsyKey||'';
-  document.getElementById('setting-tiktok-key').value = APP.settings.tiktokKey||'';
 }
 
 function loadLocalData() {
@@ -688,9 +692,10 @@ function renderDetailQR() {
   const wrap=document.getElementById('detail-qr-canvas');
   wrap.innerHTML='';
   const canvas=document.createElement('canvas');
-  canvas.width=200; canvas.height=200;
   wrap.appendChild(canvas);
-  QRCode.toCanvas(canvas,p.qrId||p.sku,{width:200,margin:2,color:{dark:'#1A1A1A',light:'#FFFFFF'}});
+  QRCode.toCanvas(canvas,p.qrId||p.sku,{width:200,margin:2,color:{dark:'#1A1A1A',light:'#FFFFFF'}},err=>{
+    if(err){wrap.innerHTML='<p style="font-size:13px;color:var(--danger)">QR generation failed</p>';console.error('QR error:',err);}
+  });
   document.getElementById('detail-qr-label').textContent=`${p.name}${p.variant?' — '+p.variant:''}`;
 }
 
@@ -827,7 +832,7 @@ function confirmScan() {
   if(p.homeQty===0&&isSale) showToast(`🚨 ${p.name} home stock is now 0!`,'warn');
   else showToast(`${isSale?'−':'+'}${qty} ${p.name} (${bucket})`,isSale?'error':'success');
   renderDashboard();
-  apiCall('POST','/transaction',{transaction:tx,products:APP.products});
+  apiCall('POST','/transaction',{transaction:tx,products:[{sku:p.sku,sqId:p.sqId,etsyId:p.etsyId,tiktokId:p.tiktokId}]});
 }
 
 function filterManualProducts(val) {
@@ -962,13 +967,23 @@ async function runManualSync() {
   setHeaderSync('syncing','Syncing…');
   addSyncLog('Manual sync started','ok');
   try {
-    const res=await apiCall('POST','/pull-orders',{platforms:['squarespace','etsy','tiktok']});
+    // 1) Flush any queued offline writes first so the backend is current
+    //    before we pull. Surface anything still stuck.
+    await flushOutbox();
+    const stuck=loadOutbox().length;
+    if(stuck>0) addSyncLog(`${stuck} change(s) still queued (will retry)`,'err');
+
+    // 2) Pull orders directly (read-style call, returns orders to apply locally)
+    const res=await fetch(APP.settings.workerUrl+'/pull-orders',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({platforms:['squarespace','etsy','tiktok']}),
+    }).then(r=>r.json());
     if(res&&res.ok){
       if(res.orders) applyPulledOrders(res.orders);
       APP.lastSync=new Date().toISOString();
       saveLocalData();
       setHeaderSync('ok','Synced');
-      addSyncLog('Sync complete','ok');
+      addSyncLog(`Sync complete — ${res.ordersProcessed||0} order(s) processed`,'ok');
       showToast('Sync complete!','success');
       updatePlatformDots(); renderDashboard();
     } else throw new Error(res?.error||'Unknown error');
@@ -978,6 +993,7 @@ async function runManualSync() {
     showToast('Sync failed: '+e.message,'error');
   }
   btn.classList.remove('spinning');
+  updateQueueBadge();
 }
 
 function applyPulledOrders(orders) {
@@ -1071,21 +1087,22 @@ function setHeaderSync(state,label){
 }
 
 function updatePlatformDots() {
+  const ps=APP.platformStatus||{};
   const set=(dotId,statusId,key)=>{
-    const configured=!!APP.settings[key];
+    const configured=!!ps[key];
     const dot=document.getElementById(dotId); const status=document.getElementById(statusId);
     if(!dot||!status) return;
     dot.className='sync-dot '+(configured?'ok':'off');
     status.textContent=configured?'Configured':'Not configured';
   };
-  set('sq-dot','sq-status','sqKey');
-  set('etsy-dot','etsy-status','etsyKey');
-  set('tiktok-dot','tiktok-status','tiktokKey');
+  set('sq-dot','sq-status','squarespace');
+  set('etsy-dot','etsy-status','etsy');
+  set('tiktok-dot','tiktok-status','tiktok');
   if(APP.lastSync){
     const t=new Date(APP.lastSync).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     ['sq-last-sync','etsy-last-sync','tiktok-last-sync'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Last sync: '+t;});
-    setHeaderSync('ok','Synced');
   }
+  updateQueueBadge();
 }
 
 // ── SETTINGS ──
@@ -1095,13 +1112,11 @@ function saveSettings() {
     threshold:parseInt(document.getElementById('setting-threshold').value)||5,
     workerUrl:document.getElementById('setting-worker-url').value.trim().replace(/\/$/,''),
     sheetId:document.getElementById('setting-sheet-id').value.trim(),
-    sqKey:document.getElementById('setting-sq-key').value.trim(),
-    etsyKey:document.getElementById('setting-etsy-key').value.trim(),
-    tiktokKey:document.getElementById('setting-tiktok-key').value.trim(),
   };
   localStorage.setItem('mf_settings',JSON.stringify(APP.settings));
   if(APP.settings.username) document.getElementById('user-badge-btn').textContent=APP.settings.username.charAt(0).toUpperCase();
   updatePlatformDots();
+  flushOutbox(); // a worker URL may have just been added — try draining the queue
   showToast('Settings saved','success');
 }
 
@@ -1111,21 +1126,106 @@ async function testConnection() {
   try {
     const res=await fetch(APP.settings.workerUrl+'/ping');
     const data=await res.json();
+    if(data.platforms){
+      APP.platformStatus=data.platforms;
+      localStorage.setItem('mf_platformstatus',JSON.stringify(data.platforms));
+      updatePlatformDots();
+    }
     if(data.ok&&data.sheetsConnected) showToast('Connection successful! Sheets connected ✓','success');
     else if(data.ok) showToast('Worker OK but Sheets auth failed','error');
     else showToast('Connection failed','error');
   } catch(e){showToast('Could not reach Worker','error');}
 }
 
-// ── API ──
-async function apiCall(method,path,body) {
+// ── API + OFFLINE OUTBOX ──
+// Every write-action goes through the outbox: queued durably in localStorage,
+// flushed when possible, retried on failure/reconnect. Each item carries a
+// unique id used as the worker idempotency key, so a retry of an
+// already-applied request is a safe no-op (never double-counts a sale).
+
+function loadOutbox(){return JSON.parse(localStorage.getItem('mf_outbox')||'[]');}
+function saveOutbox(q){localStorage.setItem('mf_outbox',JSON.stringify(q));}
+
+function genId(){
+  return (crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2));
+}
+
+// Queue a write. For transactions, stamp txId into the body so the worker can
+// build a stable idempotency key. Returns immediately; flushing is async.
+function queueWrite(method,path,body){
+  const q=loadOutbox();
+  const id=genId();
+  if(path==='/transaction'&&body?.transaction&&!body.transaction.txId){
+    body.transaction.txId=id;
+  }
+  q.push({id,method,path,body,attempts:0,queuedAt:new Date().toISOString()});
+  saveOutbox(q);
+  updateQueueBadge();
+  flushOutbox(); // fire-and-forget; safe to call repeatedly
+  return id;
+}
+
+let flushing=false;
+async function flushOutbox(){
+  if(flushing) return;
+  if(!APP.settings.workerUrl) return; // nothing to flush to yet
+  if(typeof navigator!=='undefined'&&navigator.onLine===false) return;
+  const q=loadOutbox();
+  if(q.length===0){updateQueueBadge();return;}
+  flushing=true;
+  try{
+    // Process oldest-first; stop on first hard failure so order is preserved.
+    while(q.length){
+      const item=q[0];
+      try{
+        const opts={method:item.method,headers:{'Content-Type':'application/json'}};
+        if(item.body) opts.body=JSON.stringify(item.body);
+        const res=await fetch(APP.settings.workerUrl+item.path,opts);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        // success — drop it
+        q.shift();
+        saveOutbox(q);
+        updateQueueBadge();
+      }catch(e){
+        item.attempts=(item.attempts||0)+1;
+        item.lastError=e.message;
+        saveOutbox(q);
+        // leave it at the head of the queue; try again later
+        break;
+      }
+    }
+  }finally{
+    flushing=false;
+    updateQueueBadge();
+  }
+}
+
+function updateQueueBadge(){
+  const n=loadOutbox().length;
+  const label=document.getElementById('header-sync-label');
+  const dot=document.getElementById('header-sync-dot');
+  if(!label||!dot) return;
+  if(n>0){
+    label.textContent=(navigator.onLine===false?'Offline · ':'')+n+' queued';
+    dot.className='sync-dot '+(navigator.onLine===false?'off':'syncing');
+  }else if(APP.lastSync){
+    label.textContent='Synced';
+    dot.className='sync-dot ok';
+  }
+}
+
+// Backwards-compatible wrapper. Writes are queued; reads go direct.
+async function apiCall(method,path,body){
   if(!APP.settings.workerUrl) return null;
-  try {
-    const opts={method,headers:{'Content-Type':'application/json'}};
-    if(body) opts.body=JSON.stringify(body);
-    const res=await fetch(APP.settings.workerUrl+path,opts);
-    return await res.json();
-  } catch(e){console.warn('API failed:',path,e.message);return null;}
+  if(method==='GET'){
+    try{
+      const res=await fetch(APP.settings.workerUrl+path);
+      return await res.json();
+    }catch(e){console.warn('API GET failed:',path,e.message);return null;}
+  }
+  // Writes (POST/PUT) are durable — queue and flush.
+  queueWrite(method,path,body);
+  return {queued:true};
 }
 
 // ── TOAST ──
