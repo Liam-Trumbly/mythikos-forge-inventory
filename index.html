@@ -13,8 +13,8 @@
 <title>Mythikos Forge — Inventory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.4/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="./qrcode.min.js"></script>
+<script src="./jsQR.min.js"></script>
 <style>
   :root {
     --bg:#C8C8C8;--bg-card:rgba(255,255,255,0.72);--bg-card-solid:#F2F0EC;
@@ -653,14 +653,21 @@ function showDetailTab(tab) {
   }
 }
 
-// Reliable QR generator: wraps the callback form in a promise so it works
-// consistently across browsers (the library's own promise form was failing
-// on mobile). Returns a PNG data URL.
+// Reliable QR generator for the browser build of the qrcode library.
+// The browser build renders to a <canvas> (its toDataURL needs one), so we
+// draw to an offscreen canvas and read the PNG data URL from it. This is the
+// method that works on mobile; the bare toDataURL path did not.
 function makeQRDataUrl(text){
   return new Promise((resolve,reject)=>{
     try{
-      QRCode.toDataURL(String(text),{width:240,margin:1,color:{dark:'#1A1A1A',light:'#FFFFFF'}},(err,url)=>{
-        if(err||!url) reject(err||new Error('no url')); else resolve(url);
+      if(typeof QRCode==='undefined'||!QRCode.toCanvas){
+        reject(new Error('QR library not loaded'));return;
+      }
+      const canvas=document.createElement('canvas');
+      QRCode.toCanvas(canvas,String(text),{width:240,margin:1,color:{dark:'#1A1A1A',light:'#FFFFFF'}},(err)=>{
+        if(err){reject(err);return;}
+        try{ resolve(canvas.toDataURL('image/png')); }
+        catch(e){ reject(e); }
       });
     }catch(e){reject(e);}
   });
