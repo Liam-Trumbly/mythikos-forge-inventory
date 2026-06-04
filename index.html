@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="./qrcode.min.js"></script>
 <script src="./jsQR.min.js"></script>
+<script src="./jspdf.umd.min.js" defer></script>
 <style>
   :root {
     --bg:#C8C8C8;--bg-card:rgba(255,255,255,0.72);--bg-card-solid:#F2F0EC;
@@ -343,14 +344,8 @@
         <div class="platform-name"><div class="platform-icon sq">S</div>Squarespace</div>
         <div class="platform-right"><div class="platform-status"><span class="sync-dot off" id="sq-dot"></span> <span id="sq-status">Not configured</span></div><div class="platform-last-sync" id="sq-last-sync"></div></div>
       </div>
-      <div class="platform-row">
-        <div class="platform-name"><div class="platform-icon etsy">E</div>Etsy</div>
-        <div class="platform-right"><div class="platform-status"><span class="sync-dot off" id="etsy-dot"></span> <span id="etsy-status">Not configured</span></div><div class="platform-last-sync" id="etsy-last-sync"></div></div>
-      </div>
-      <div class="platform-row">
-        <div class="platform-name"><div class="platform-icon tiktok">T</div>TikTok Shop</div>
-        <div class="platform-right"><div class="platform-status"><span class="sync-dot off" id="tiktok-dot"></span> <span id="tiktok-status">Not configured</span></div><div class="platform-last-sync" id="tiktok-last-sync"></div></div>
-      </div>
+      <!-- Etsy removed; TikTok shelved until we decide to sell there (re-add a
+           platform-row + the matching set() call in updatePlatformDots). -->
       <button class="save-btn secondary" style="margin-top:12px;margin-bottom:0" onclick="showView('settings')">Configure API Keys</button>
     </div>
     <div class="card">
@@ -378,7 +373,7 @@
     </div>
     <div class="settings-label">Platforms</div>
     <div class="card" style="margin-bottom:12px">
-      <p style="font-size:13px;color:var(--text-muted);line-height:1.5">API keys for Squarespace, Etsy, and TikTok live securely in your Cloudflare Worker (Settings → Variables and Secrets), never in this app or your phone. The dots below reflect what the Worker reports — use <b>Test Connection</b> to refresh.</p>
+      <p style="font-size:13px;color:var(--text-muted);line-height:1.5">API keys live securely in your Cloudflare Worker (Settings → Variables and Secrets), never in this app or your phone. Status refreshes automatically on launch and after every sync — <b>Test Connection</b> just forces a re-check.</p>
       <button class="save-btn secondary" style="margin-top:12px;margin-bottom:0" onclick="testConnection()">Test Connection</button>
     </div>
     <button class="save-btn" onclick="saveSettings()">Save Settings</button>
@@ -532,7 +527,8 @@
 <div id="qr-print-view">
   <div class="qrp-toolbar">
     <button class="btn back" onclick="closeQrPrintView()">← Back</button>
-    <button class="btn print" onclick="window.print()">Print</button>
+    <button class="btn print" onclick="saveQrPdf()">Save PDF</button>
+    <button class="btn back" onclick="window.print()">Browser Print</button>
     <span id="qrp-view-count" style="font-size:12px;color:#666"></span>
   </div>
   <div class="qr-grid" id="qrp-grid"></div>
@@ -569,6 +565,7 @@ function init() {
   document.addEventListener('visibilitychange', ()=>{if(!document.hidden) flushOutbox();});
   setInterval(flushOutbox, 30000);
   flushOutbox(); // attempt on startup
+  refreshPlatformStatus(); // auto-green the platform dots from Worker secrets
 }
 
 function loadSettings() {
@@ -911,7 +908,8 @@ async function printSelectedQRCodes(){
     const label=`${escapeHtml(p.name)}${p.variant?' — '+escapeHtml(p.variant):''}`;
     return `<div class="qr-cell"><img src="${p.qrDataUrl}" alt=""><div class="qr-name">${label}</div><div class="qr-sku">${escapeHtml(p.sku)}</div></div>`;
   }).join('');
-  document.getElementById('qrp-view-count').textContent=printable.length+' code'+(printable.length===1?'':'s')+' · letter size';
+  APP.qrPrintList=printable; // kept for saveQrPdf()
+  document.getElementById('qrp-view-count').textContent=printable.length+' code'+(printable.length===1?'':'s')+' · '+Math.ceil(printable.length/20)+' page'+(printable.length>20?'s':'')+' (PDF)';
   closeQrPrintModal();
   document.getElementById('qr-print-view').classList.add('open');
   document.body.classList.add('qr-printing');
@@ -921,6 +919,36 @@ async function printSelectedQRCodes(){
 function closeQrPrintView(){
   document.getElementById('qr-print-view').classList.remove('open');
   document.body.classList.remove('qr-printing');
+}
+
+// Build a multi-page letter-size PDF with explicit cell placement — 4 × 5 grid,
+// 20 codes per page. Pagination is computed, not left to the browser, so a code
+// can never be split across pages. Works offline (jsPDF is bundled locally).
+function saveQrPdf(){
+  const jsPDFCtor=window.jspdf&&window.jspdf.jsPDF;
+  if(!jsPDFCtor){showToast('PDF library not loaded — refresh and retry','error');return;}
+  const items=APP.qrPrintList||[];
+  if(items.length===0){showToast('Nothing to save','error');return;}
+  const doc=new jsPDFCtor({unit:'pt',format:'letter'}); // 612 × 792 pt
+  const margin=28.8, cols=4, rows=5, perPage=cols*rows;
+  const cellW=(612-2*margin)/cols, cellH=(792-2*margin)/rows;
+  const qrSize=Math.min(cellW,cellH)-46; // QR ≈ 1.4in — comfortable scan size
+  items.forEach((p,i)=>{
+    const slot=i%perPage;
+    if(i>0&&slot===0) doc.addPage();
+    const x=margin+(slot%cols)*cellW, y=margin+Math.floor(slot/cols)*cellH;
+    doc.setDrawColor(190); doc.rect(x+2,y+2,cellW-4,cellH-4); // cut guide
+    doc.addImage(p.qrDataUrl,'PNG',x+(cellW-qrSize)/2,y+5,qrSize,qrSize);
+    doc.setFontSize(7); doc.setTextColor(26,26,26);
+    const label=p.name+(p.variant?' — '+p.variant:'');
+    const lines=doc.splitTextToSize(label,cellW-14).slice(0,2);
+    doc.text(lines,x+cellW/2,y+qrSize+14,{align:'center'});
+    doc.setFontSize(6); doc.setTextColor(110,110,110);
+    doc.text(String(p.sku),x+cellW/2,y+qrSize+15+lines.length*8,{align:'center'});
+  });
+  const pages=Math.ceil(items.length/perPage);
+  doc.save('Mythikos_QR_Codes_'+new Date().toISOString().slice(0,10)+'.pdf');
+  showToast(`PDF saved — ${items.length} codes on ${pages} page${pages===1?'':'s'}`,'success');
 }
 
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -1118,7 +1146,7 @@ async function runManualSync() {
       setHeaderSync('ok','Synced');
       addSyncLog(`Sync complete — ${res.ordersProcessed||0} order(s) processed`,'ok');
       showToast('Sync complete!','success');
-      updatePlatformDots(); renderDashboard();
+      refreshPlatformStatus(); renderDashboard();
     } else throw new Error(res?.error||'Unknown error');
   } catch(e) {
     setHeaderSync('err','Error');
@@ -1277,13 +1305,30 @@ function updatePlatformDots() {
     status.textContent=configured?'Configured':'Not configured';
   };
   set('sq-dot','sq-status','squarespace');
-  set('etsy-dot','etsy-status','etsy');
-  set('tiktok-dot','tiktok-status','tiktok');
+  // Etsy removed; TikTok shelved — re-add a set() call here with its
+  // platform-row if we pick it up in a future version.
   if(APP.lastSync){
     const t=new Date(APP.lastSync).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-    ['sq-last-sync','etsy-last-sync','tiktok-last-sync'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Last sync: '+t;});
+    const el=document.getElementById('sq-last-sync');
+    if(el) el.textContent='Last sync: '+t;
   }
   updateQueueBadge();
+}
+
+// Silently ask the Worker which API keys it holds, so the Squarespace row goes
+// green on its own (no need to tap Test Connection). Runs at launch and after
+// each manual sync; fails quietly when offline.
+async function refreshPlatformStatus(){
+  if(!APP.settings.workerUrl) return;
+  try{
+    const res=await fetch(APP.settings.workerUrl+'/ping');
+    const data=await res.json();
+    if(data&&data.platforms){
+      APP.platformStatus=data.platforms;
+      localStorage.setItem('mf_platformstatus',JSON.stringify(data.platforms));
+      updatePlatformDots();
+    }
+  }catch(e){/* offline or worker unreachable — keep last known status */}
 }
 
 // ── SETTINGS ──
