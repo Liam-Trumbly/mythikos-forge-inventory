@@ -1,7 +1,7 @@
 // Mythikos Forge — Service Worker
 // Caches the app shell so the app opens even with no signal (e.g. at events).
 // Bump CACHE_VERSION whenever you change the HTML or want to force a refresh.
-const CACHE_VERSION = 'mf-v7'; // QR/jsQR now bundled locally (CDN URLs were 404)
+const CACHE_VERSION = 'mf-v8'; // QR print select + in-app print view + collapsible alerts
 
 // Absolute URLs relative to the domain root for stable subfolder hosting.
 const APP_SHELL = [
