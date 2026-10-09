@@ -1,7 +1,7 @@
 // Mythikos Forge — Service Worker
 // Caches the app shell so the app opens even with no signal (e.g. at events).
 // Bump CACHE_VERSION whenever you change the HTML or want to force a refresh.
-const CACHE_VERSION = 'mf-v10'; // QR PDF via share sheet (AirPrint), single print button
+const CACHE_VERSION = 'mf-v11'; // Checkout tab: Square POS hand-off, cash, pending carts
 
 // Absolute URLs relative to the domain root for stable subfolder hosting.
 const APP_SHELL = [
@@ -50,18 +50,23 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(req.url);
   // Don't cache the worker API (inventory data) — let it hit the network only.
-  if (url.pathname.match(/\/(ping|products|inventory|transaction|adjust|sync|pull-orders|squarespace)/)) {
+  if (url.pathname.match(/\/(ping|products|inventory|transaction|adjust|sync|pull-orders|squarespace|pos-sale|batch-import)/)) {
     return; // default browser handling
   }
+
+  // A Square POS callback (?data=… / com.squareup.pos.…) is the app page with a
+  // one-time result attached: serve it, but don't cache each unique URL.
+  const isCallback = url.search.length > 0;
 
   event.respondWith(
     fetch(req)
       .then(res => {
+        if (isCallback) return res;
         // Update cache with fresh copy of shell assets
         const copy = res.clone();
         caches.open(CACHE_VERSION).then(c => c.put(req, copy)).catch(() => {});
         return res;
       })
-      .catch(() => caches.match(req).then(hit => hit || caches.match('/mythikos-forge-inventory/index.html')))
+      .catch(() => caches.match(req, { ignoreSearch: true }).then(hit => hit || caches.match('/mythikos-forge-inventory/index.html')))
   );
 });
