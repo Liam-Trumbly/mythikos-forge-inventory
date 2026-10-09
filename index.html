@@ -245,6 +245,73 @@
     .qr-grid{gap:8px}
     .qr-cell{border-color:#999}
   }
+
+  /* ── CHECKOUT (POS) ── */
+  .pos-event-bar{display:flex;align-items:center;gap:10px;background:var(--black);color:#fff;border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;border:1px solid var(--purple)}
+  .pos-event-bar .pos-event-name{font-family:var(--font-display);font-size:14px;font-weight:700;letter-spacing:0.04em}
+  .pos-event-bar .pos-event-meta{font-size:11px;color:#bbb;margin-top:1px}
+  .pos-event-bar button{background:none;border:1px solid rgba(255,255,255,0.25);color:#ddd;border-radius:20px;padding:5px 10px;font-size:11px;font-family:var(--font-body);cursor:pointer}
+  .pos-warn{background:var(--warning-bg);border:1px solid var(--warning);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text);margin-bottom:12px;line-height:1.45}
+  .pos-scan-row{display:flex;gap:8px;margin-bottom:8px}
+  .pos-scan-row .search-bar{flex:1;margin-bottom:0}
+  .pos-cam-btn{flex-shrink:0;width:52px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg-card);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .pos-cam-btn svg{width:22px;height:22px;stroke:var(--purple);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .pos-cam-btn.on{background:var(--purple)}.pos-cam-btn.on svg{stroke:#fff}
+  .pos-cam{display:none;position:relative;border-radius:var(--radius);overflow:hidden;background:#000;aspect-ratio:16/9;margin-bottom:10px}
+  .pos-cam.on{display:block}
+  .pos-cam video{width:100%;height:100%;object-fit:cover}
+  .pos-results{margin-bottom:10px}
+  .pos-result{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card-solid);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer}
+  .pos-result:active{transform:scale(0.99)}
+  .pos-result-info{flex:1;min-width:0}
+  .pos-result-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pos-result-sub{font-size:12px;color:var(--text-muted)}
+  .pos-result-price{font-weight:700;font-size:15px}
+  .pos-line{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+  .pos-line:last-child{border-bottom:none}
+  .pos-line-info{flex:1;min-width:0}
+  .pos-line-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pos-line-sub{font-size:12px;color:var(--text-muted)}
+  .pos-line-sub.warn{color:var(--danger);font-weight:600}
+  .pos-stepper{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .pos-stepper button{width:34px;height:34px;border-radius:50%;border:2px solid var(--purple);background:none;color:var(--purple);font-size:18px;font-weight:600;cursor:pointer;line-height:1}
+  .pos-stepper span{min-width:22px;text-align:center;font-weight:700;font-size:16px}
+  .pos-line-total{width:70px;text-align:right;font-weight:700;font-size:15px;flex-shrink:0}
+  .pos-line-x{background:none;border:none;color:var(--text-light);font-size:20px;cursor:pointer;padding:0 2px;flex-shrink:0}
+  .pos-totals{margin-top:6px;border-top:2px solid var(--border-strong);padding-top:10px}
+  .pos-tot-row{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;color:var(--text-muted)}
+  .pos-tot-row.deal{color:var(--success);font-weight:600}
+  .pos-tot-row.hint{color:var(--purple);font-size:12px;font-style:italic}
+  .pos-tot-row.grand{color:var(--black);font-family:var(--font-display);font-size:22px;font-weight:700;padding-top:6px}
+  .pos-tot-row.small{font-size:12px}
+  .pos-pay{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:14px}
+  .pos-pay button{padding:16px 10px;border:none;border-radius:var(--radius);font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#fff;cursor:pointer}
+  .pos-pay .card-pay{background:var(--purple)}.pos-pay .cash-pay{background:var(--success)}
+  .pos-pay button:disabled{opacity:0.4;cursor:not-allowed}
+  .pos-pending{border-color:var(--warning)!important}
+  .pos-pending-item{padding:10px 0;border-bottom:1px solid var(--border)}
+  .pos-pending-item:last-child{border-bottom:none}
+  .pos-pending-actions{display:flex;gap:6px;margin-top:8px}
+  .pos-pending-actions button{flex:1;padding:9px 6px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:#fff}
+  .pos-pending-actions .paid{background:var(--success);color:#fff;border-color:var(--success)}
+  .pos-pending-actions .discard{color:var(--danger);border-color:var(--danger)}
+  .pos-sale-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .pos-sale-row:last-child{border-bottom:none}
+  .pos-sale-no{font-weight:700;width:78px;flex-shrink:0}
+  .pos-sale-items{flex:1;min-width:0;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pos-sale-method{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 6px;border-radius:10px;flex-shrink:0}
+  .pos-sale-method.m-card{background:var(--purple-ghost);color:var(--purple)}.pos-sale-method.m-cash{background:var(--success-bg);color:var(--success)}
+  .pos-sale-amt{font-weight:700;width:64px;text-align:right;flex-shrink:0}
+  .pos-quick-cash{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .pos-quick-cash button{padding:12px 4px;border-radius:var(--radius-sm);border:2px solid var(--success);background:none;color:var(--success);font-weight:700;font-size:14px;font-family:var(--font-body);cursor:pointer}
+  .pos-paid-check{width:72px;height:72px;border-radius:50%;background:var(--success);color:#fff;font-size:40px;display:flex;align-items:center;justify-content:center;margin:4px auto 12px}
+  .pos-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .pos-summary-grid div{background:rgba(0,0,0,0.05);border-radius:var(--radius-sm);padding:10px;text-align:center}
+  .pos-summary-grid b{display:block;font-size:18px;color:var(--black)}
+  .pos-summary-grid span{font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted)}
+  @media (min-width:768px){
+    #view-pos .pos-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  }
 </style>
 </head>
 <body>
@@ -376,6 +443,11 @@
       <p style="font-size:13px;color:var(--text-muted);line-height:1.5">API keys live securely in your Cloudflare Worker (Settings → Variables and Secrets), never in this app or your phone. Status refreshes automatically on launch and after every sync — <b>Test Connection</b> just forces a re-check.</p>
       <button class="save-btn secondary" style="margin-top:12px;margin-bottom:0" onclick="testConnection()">Test Connection</button>
     </div>
+    <div class="settings-label">Checkout (Square)</div>
+    <div class="card" style="padding-bottom:4px;margin-bottom:12px">
+      <div class="settings-field"><label>Square Application ID</label><input type="text" id="setting-square-app-id" placeholder="sq0idp-…" autocapitalize="off" spellcheck="false"></div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:12px">From developer.squareup.com → your app → Credentials (Production). In that app's <b>Point of Sale API</b> page, set the Web callback URL to exactly:<br><code id="setting-square-callback" style="font-size:11px;word-break:break-all"></code></p>
+    </div>
     <button class="save-btn" onclick="saveSettings()">Save Settings</button>
 
     <div class="settings-label" style="margin-top:20px;color:var(--danger)">Danger Zone</div>
@@ -389,7 +461,72 @@
     </div>
 
     <div style="text-align:center;margin-top:20px;padding-bottom:8px">
-      <p style="font-size:11px;color:var(--text-light);font-family:var(--font-display);letter-spacing:0.08em">MYTHIKOS FORGE INVENTORY v2.1</p>
+      <p style="font-size:11px;color:var(--text-light);font-family:var(--font-display);letter-spacing:0.08em">MYTHIKOS FORGE INVENTORY v2.2</p>
+    </div>
+  </div>
+
+  <!-- CHECKOUT (POS) -->
+  <div class="view" id="view-pos">
+    <div id="pos-standalone-warn" class="pos-warn" style="display:none">
+      <b>Open this in a Safari tab for card sales.</b> Square sends the payment result back to Safari, and the home-screen app keeps separate storage, so this screen wouldn't see the result. Cash sales work fine here.
+    </div>
+
+    <!-- No event yet -->
+    <div id="pos-no-event" class="card">
+      <div class="card-title">Start an Event</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">Set the event name and the local sales tax rate. Prices already include tax, so the rate is only used to show and log how much of each sale is tax.</p>
+      <button class="save-btn" style="margin-bottom:0" onclick="posOpenEventModal()">Start Event</button>
+    </div>
+
+    <!-- Active event -->
+    <div id="pos-active" style="display:none">
+      <div class="pos-event-bar">
+        <div style="flex:1;min-width:0">
+          <div class="pos-event-name" id="pos-event-name">—</div>
+          <div class="pos-event-meta" id="pos-event-meta">—</div>
+        </div>
+        <button onclick="posOpenEventModal(true)">Edit</button>
+        <button onclick="posOpenEndEvent()">End</button>
+      </div>
+
+      <div id="pos-pending-card"></div>
+
+      <div class="pos-cols">
+        <div>
+          <div class="pos-scan-row">
+            <div class="search-bar">
+              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" id="pos-search" placeholder="Scan or search name / variant / SKU…" autocomplete="off" autocapitalize="off" spellcheck="false" oninput="posRenderResults(this.value)" onkeydown="posSearchKey(event)">
+            </div>
+            <button class="pos-cam-btn" id="pos-cam-btn" onclick="posToggleCamera()" aria-label="Camera scan">
+              <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </button>
+          </div>
+          <div class="pos-cam" id="pos-cam"><video id="pos-video" playsinline autoplay muted></video><div class="scanner-overlay"><div class="scanner-frame" style="width:40%;height:70%"><div class="scanner-line"></div></div></div></div>
+          <div class="pos-results" id="pos-results"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <div class="card-title" style="margin:0">Cart <span id="pos-sale-no" style="color:var(--text-muted);font-weight:400"></span></div>
+            <button class="section-action" onclick="posClearCart()">Clear</button>
+          </div>
+          <div id="pos-cart"></div>
+          <div class="pos-totals" id="pos-totals"></div>
+          <div class="pos-pay">
+            <button class="card-pay" id="pos-card-btn" onclick="posChargeCard()">Charge Card</button>
+            <button class="cash-pay" id="pos-cash-btn" onclick="posOpenCash()">Cash</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <div class="card-title" style="margin:0">Sales This Event</div>
+          <span style="font-size:12px;color:var(--text-muted)" id="pos-sales-count"></span>
+        </div>
+        <div id="pos-sales-list"></div>
+      </div>
     </div>
   </div>
 
@@ -407,6 +544,10 @@
   <button class="nav-btn" id="nav-scan" onclick="showView('scan')">
     <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
     <span class="nav-label">Scan</span>
+  </button>
+  <button class="nav-btn" id="nav-pos" onclick="showView('pos')">
+    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
+    <span class="nav-label">Checkout</span>
   </button>
   <button class="nav-btn" id="nav-sync" onclick="showView('sync')">
     <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
@@ -443,6 +584,7 @@
     <div class="settings-field"><label>Variant</label><input type="text" id="new-variant" placeholder="e.g. Black / 100ct"></div>
     <div class="settings-field"><label>Home Quantity</label><input type="number" id="new-qty" placeholder="0" min="0"></div>
     <div class="settings-field"><label>Low Stock Threshold</label><input type="number" id="new-threshold" placeholder="5" min="1"></div>
+    <div class="settings-field"><label>Checkout Price ($)</label><input type="number" id="new-price" placeholder="25.00" step="0.01" min="0" inputmode="decimal"></div>
     <div class="settings-field"><label>Squarespace Variant ID (optional)</label><input type="text" id="new-sq-id" placeholder="variant_abc123"></div>
     <div class="settings-field"><label>Etsy ListingID_OfferingID (optional)</label><input type="text" id="new-etsy-id" placeholder="12345678_98765432"></div>
     <button class="save-btn" onclick="saveNewProduct()">Add Product</button>
@@ -463,7 +605,8 @@
       <button class="scan-mode-btn detail-tab-btn" data-tab="qr" onclick="showDetailTab('qr')">QR</button>
     </div>
     <div id="detail-info">
-      <div class="modal-stock-row" style="margin-bottom:20px"><span class="modal-stock-label">In stock</span><span class="modal-stock-val" id="detail-home-qty">0</span></div>
+      <div class="modal-stock-row" style="margin-bottom:10px"><span class="modal-stock-label">In stock</span><span class="modal-stock-val" id="detail-home-qty">0</span></div>
+      <div class="modal-stock-row" style="margin-bottom:20px"><span class="modal-stock-label">Checkout price</span><span class="modal-stock-val" id="detail-price" style="font-size:18px">—</span></div>
       <button class="modal-confirm-btn restock" onclick="closeProductDetailModal();showView('scan')">+ Add Restock</button>
       <button class="modal-cancel-btn" style="color:var(--danger);font-weight:600;margin-top:4px" onclick="archiveProduct()">Archive Product</button>
     </div>
@@ -479,6 +622,7 @@
       <div class="settings-field"><label>Product Name</label><input type="text" id="edit-name"></div>
       <div class="settings-field"><label>Variant</label><input type="text" id="edit-variant"></div>
       <div class="settings-field"><label>Low Stock Threshold</label><input type="number" id="edit-threshold" min="1"></div>
+      <div class="settings-field"><label>Checkout price override ($) <span id="edit-web-price" style="font-weight:400"></span></label><input type="number" id="edit-pos-price" step="0.01" min="0" inputmode="decimal" placeholder="Blank = use website price"></div>
       <div class="settings-field"><label>Squarespace Variant ID</label><input type="text" id="edit-sq-id"></div>
       <div class="settings-field"><label>Etsy ListingID_OfferingID</label><input type="text" id="edit-etsy-id"></div>
       <button class="save-btn" onclick="saveProductEdit()">Save Changes</button>
@@ -533,6 +677,67 @@
   <div class="qr-grid" id="qrp-grid"></div>
 </div>
 
+
+<!-- POS: Event modal -->
+<div class="modal-overlay" id="pos-event-modal" onclick="posCloseModal(event,'pos-event-modal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--purple)" id="pos-event-modal-title">Start Event</div>
+    <div class="settings-field"><label>Event name</label><input type="text" id="pos-ev-name" placeholder="e.g. Rocky Mountain Con"></div>
+    <div class="settings-field"><label>Sales tax rate (%) — included in prices</label><input type="number" id="pos-ev-tax" step="0.001" min="0" max="20" placeholder="8.2"></div>
+    <div class="settings-label" style="margin-top:6px">Deal</div>
+    <div class="card" style="padding-bottom:4px">
+      <div class="settings-field"><label>Products whose name contains</label><input type="text" id="pos-ev-deal-kw" placeholder="pokeball"></div>
+      <div style="display:flex;gap:10px">
+        <div class="settings-field" style="flex:1"><label>Buy at least</label><input type="number" id="pos-ev-deal-min" min="1" placeholder="2"></div>
+        <div class="settings-field" style="flex:1"><label>% off whole order</label><input type="number" id="pos-ev-deal-pct" min="0" max="100" placeholder="20"></div>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Leave % at 0 to turn the deal off for this event.</p>
+    </div>
+    <button class="save-btn" onclick="posSaveEvent()">Save</button>
+    <button class="modal-cancel-btn" onclick="posCloseModal(null,'pos-event-modal')">Cancel</button>
+  </div>
+</div>
+
+<!-- POS: Cash modal -->
+<div class="modal-overlay" id="pos-cash-modal" onclick="posCloseModal(event,'pos-cash-modal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:4px;color:var(--success)">Cash Sale</div>
+    <div class="modal-stock-row" style="margin:12px 0"><span class="modal-stock-label">Total due</span><span class="modal-stock-val" id="pos-cash-due">$0.00</span></div>
+    <div class="settings-field"><label>Cash received</label><input type="number" id="pos-cash-recv" step="0.01" min="0" inputmode="decimal" oninput="posUpdateChange()"></div>
+    <div class="pos-quick-cash" id="pos-quick-cash"></div>
+    <div class="modal-stock-row" style="margin-bottom:16px"><span class="modal-stock-label">Change</span><span class="modal-stock-val" id="pos-cash-change">—</span></div>
+    <button class="modal-confirm-btn restock" onclick="posConfirmCash()">Complete Cash Sale</button>
+    <button class="modal-cancel-btn" onclick="posCloseModal(null,'pos-cash-modal')">Cancel</button>
+  </div>
+</div>
+
+<!-- POS: Paid / result modal -->
+<div class="modal-overlay" id="pos-paid-modal" onclick="posCloseModal(event,'pos-paid-modal')">
+  <div class="modal-sheet" style="text-align:center">
+    <div class="modal-handle"></div>
+    <div class="pos-paid-check">✓</div>
+    <div style="font-family:var(--font-display);font-size:22px;font-weight:700" id="pos-paid-total">$0.00</div>
+    <div style="font-size:13px;color:var(--text-muted);margin:4px 0 16px" id="pos-paid-meta">—</div>
+    <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--success);margin-bottom:16px;display:none" id="pos-paid-change"></div>
+    <button class="save-btn" onclick="posCloseModal(null,'pos-paid-modal');posFocusSearch()">New Sale</button>
+  </div>
+</div>
+
+<!-- POS: End event modal -->
+<div class="modal-overlay" id="pos-end-modal" onclick="posCloseModal(event,'pos-end-modal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:12px;color:var(--purple)">End Event</div>
+    <div class="pos-summary-grid" id="pos-end-summary"></div>
+    <div id="pos-end-warn"></div>
+    <button class="save-btn secondary" onclick="posExportCsv()">Export Sales CSV</button>
+    <button class="save-btn danger-btn" onclick="posEndEvent()">End Event</button>
+    <button class="modal-cancel-btn" onclick="posCloseModal(null,'pos-end-modal')">Keep Selling</button>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════
 // CONFIG — edit these two values once, here, then everyone's devices
@@ -544,6 +749,12 @@
 const CONFIG = {
   workerUrl: 'https://forge-inventory.ldtrumbly.workers.dev',   // ← paste your Cloudflare Worker URL
   sheetId:   '1R-4IHASesQM78X0KKg5IM5q6pZlgjhDepCCKoxICCZw',                                  // ← (optional) paste your Google Sheet ID
+  // Square Point of Sale API (Checkout tab). The Application ID is public
+  // (it's in every payment link), so it's fine here. Paste it once you've
+  // created the app at developer.squareup.com. The callback URL must match the
+  // "Web callback URL" registered there EXACTLY.
+  squareAppId:       '',   // ← sq0idp-…
+  squareCallbackUrl: 'https://liam-trumbly.github.io/mythikos-forge-inventory/',
 };
 
 const APP = {
@@ -565,6 +776,9 @@ function init() {
   setInterval(flushOutbox, 30000);
   flushOutbox(); // attempt on startup
   refreshPlatformStatus(); // auto-green the platform dots from Worker secrets
+  // Checkout: handle a Square POS return first, then settle any pending carts.
+  posHandleSquareCallback();
+  posCheckPendingWithWorker();
 }
 
 function loadSettings() {
@@ -574,12 +788,15 @@ function loadSettings() {
   // Saved (non-empty) values always win, so per-device overrides still hold.
   if(!APP.settings.workerUrl) APP.settings.workerUrl = CONFIG.workerUrl || '';
   if(!APP.settings.sheetId)   APP.settings.sheetId   = CONFIG.sheetId   || '';
+  if(!APP.settings.squareAppId) APP.settings.squareAppId = CONFIG.squareAppId || '';
   APP.platformStatus = JSON.parse(localStorage.getItem('mf_platformstatus')||'{}');
   if (APP.settings.username) document.getElementById('user-badge-btn').textContent = APP.settings.username.charAt(0).toUpperCase();
   document.getElementById('setting-username').value = APP.settings.username||'';
   document.getElementById('setting-threshold').value = APP.settings.threshold||5;
   document.getElementById('setting-worker-url').value = APP.settings.workerUrl||'';
   document.getElementById('setting-sheet-id').value = APP.settings.sheetId||'';
+  document.getElementById('setting-square-app-id').value = APP.settings.squareAppId||'';
+  document.getElementById('setting-square-callback').textContent = (APP.settings.squareCallbackUrl||CONFIG.squareCallbackUrl);
 }
 
 function loadLocalData() {
@@ -599,6 +816,7 @@ function saveLocalData() {
 // ── NAV ──
 function showView(name) {
   if (APP.scanning) stopScan();
+  if (typeof POS!=='undefined' && POS.camOn) posStopCamera();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
@@ -608,6 +826,7 @@ function showView(name) {
   if (name==='dashboard') renderDashboard();
   if (name==='products') renderProductList();
   if (name==='sync') renderSyncLog();
+  if (name==='pos') { posRender(); posFocusSearch(); }
   window.scrollTo(0,0);
 }
 
@@ -722,9 +941,11 @@ function saveNewProduct() {
   const threshold=parseInt(document.getElementById('new-threshold').value)||APP.settings.threshold||5;
   const sqId=document.getElementById('new-sq-id').value.trim();
   const etsyId=document.getElementById('new-etsy-id').value.trim();
+  const priceRaw=document.getElementById('new-price').value.trim();
+  const posPrice=priceRaw===''?null:Math.max(0,parseFloat(priceRaw));
   if(!sku||!name){showToast('SKU and Name required','error');return;}
   if(APP.products.find(p=>p.sku===sku)){showToast('SKU already exists','error');return;}
-  const product={sku,name,variant,homeQty,eventQty:0,threshold,sqId,etsyId,tiktokId:'',qrId:sku,active:true,created:new Date().toISOString()};
+  const product={sku,name,variant,homeQty,eventQty:0,threshold,sqId,etsyId,tiktokId:'',qrId:sku,posPrice,active:true,created:new Date().toISOString()};
   APP.products.push(product);
   if(homeQty>0) APP.transactions.push({timestamp:new Date().toISOString(),sku,name,variant,type:'restock',qty:homeQty,bucket:'home',platform:'local',notes:'Initial stock',user:APP.settings.username||'User'});
   saveLocalData();
@@ -746,6 +967,10 @@ function openProductDetail(sku) {
   document.getElementById('edit-threshold').value=p.threshold;
   document.getElementById('edit-sq-id').value=p.sqId||'';
   document.getElementById('edit-etsy-id').value=p.etsyId||'';
+  document.getElementById('edit-pos-price').value=(p.posPrice!==undefined&&p.posPrice!==null)?p.posPrice:'';
+  document.getElementById('edit-web-price').textContent=(p.price!==undefined&&p.price!==null)?`· website $${Number(p.price).toFixed(2)}`:'· no website price';
+  const ep=priceOf(p);
+  document.getElementById('detail-price').innerHTML=ep===null?'<span style="color:var(--danger);font-size:13px">Not set</span>':'$'+ep.toFixed(2)+(p.posPrice!==undefined&&p.posPrice!==null?' <span style="font-size:11px;color:var(--text-muted)">(override)</span>':'');
   showDetailTab('info');
   document.getElementById('product-detail-modal').classList.add('open');
 }
@@ -975,9 +1200,10 @@ function saveProductEdit() {
   p.threshold=parseInt(document.getElementById('edit-threshold').value)||p.threshold;
   p.sqId=document.getElementById('edit-sq-id').value.trim();
   p.etsyId=document.getElementById('edit-etsy-id').value.trim();
+  const ov=document.getElementById('edit-pos-price').value.trim();
+  p.posPrice=ov===''?null:Math.max(0,parseFloat(ov));
   saveLocalData(); renderProductList();
-  document.getElementById('detail-product-name').textContent=p.name;
-  showDetailTab('info');
+  openProductDetail(p.sku);
   showToast(`${p.name} updated`,'success');
   apiCall('POST','/sync',{type:'product_updated',product:p});
 }
@@ -1195,12 +1421,13 @@ async function importFromSquarespace() {
         if(existing){
           // Already have it — refresh its name/variant/IDs/image from Squarespace
           // (keeps names & thumbnails current) without touching its quantity.
-          const before=existing.name+'|'+existing.variant+'|'+existing.sqId+'|'+(existing.image||'');
+          const before=existing.name+'|'+existing.variant+'|'+existing.sqId+'|'+(existing.image||'')+'|'+existing.price;
           existing.name=sp.name||existing.name;
           existing.variant=sp.variant||existing.variant;
           if(sp.variantId) existing.sqId=sp.variantId;
           if(sp.image) existing.image=sp.image;
-          const after=existing.name+'|'+existing.variant+'|'+existing.sqId+'|'+(existing.image||'');
+          if(sp.price!==undefined&&sp.price!==null) existing.price=sp.price; // website price; override (posPrice) untouched
+          const after=existing.name+'|'+existing.variant+'|'+existing.sqId+'|'+(existing.image||'')+'|'+existing.price;
           if(before!==after) refreshed.push(existing);
         } else {
           newProducts.push(sp);
@@ -1236,7 +1463,7 @@ function renderImportPreview(products) {
       <input type="checkbox" id="imp-${i}" checked style="width:18px;height:18px;accent-color:var(--purple);flex-shrink:0">
       <div class="pack-item-info" style="margin-left:4px">
         <div class="pack-item-name">${sp.name}</div>
-        <div class="pack-item-sub">${sp.variant||'No variant'} · SKU: ${sp.sku} · Qty: ${sp.qty}</div>
+        <div class="pack-item-sub">${sp.variant||'No variant'} · SKU: ${sp.sku} · Qty: ${sp.qty}${sp.price!=null?' · $'+Number(sp.price).toFixed(2):''}</div>
       </div>
     </div>`).join('');
 }
@@ -1252,6 +1479,7 @@ async function confirmImport() {
       homeQty:sp.qty||0,eventQty:0,threshold:APP.settings.threshold||5,
       sqId:sp.variantId,etsyId:'',tiktokId:'',
       image:sp.image||'',
+      price:(sp.price!==undefined?sp.price:null),
       qrId:sp.sku||sp.variantId,active:true,created:new Date().toISOString()
     };
     APP.products.push(prod);
@@ -1386,6 +1614,8 @@ function saveSettings() {
     threshold:parseInt(document.getElementById('setting-threshold').value)||5,
     workerUrl:document.getElementById('setting-worker-url').value.trim().replace(/\/$/,''),
     sheetId:document.getElementById('setting-sheet-id').value.trim(),
+    squareAppId:document.getElementById('setting-square-app-id').value.trim(),
+    squareCallbackUrl:APP.settings.squareCallbackUrl||'',
   };
   localStorage.setItem('mf_settings',JSON.stringify(APP.settings));
   if(APP.settings.username) document.getElementById('user-badge-btn').textContent=APP.settings.username.charAt(0).toUpperCase();
@@ -1521,6 +1751,602 @@ function showToast(msg,type='info') {
   requestAnimationFrame(()=>toast.classList.add('show'));
   setTimeout(()=>{toast.classList.remove('show');setTimeout(()=>toast.remove(),300);},3000);
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// CHECKOUT (POS) — Square Point of Sale hand-off
+//
+// Flow: scan/search → cart → the app applies the deal and works out tax →
+// "Charge Card" opens the Square POS app with just the total (+ a note with
+// the items) → the card runs on the reader at Square's in-person rate →
+// Square reopens this page with the result → the app records the sale,
+// decrements stock, and the Worker pushes the new counts to Squarespace.
+// Cash skips Square entirely.
+//
+// Prices INCLUDE tax. The event's tax rate is only used to back out how much
+// of each sale is tax, for the note and the sales log. Square is told to
+// clear its own default taxes so it charges exactly our total.
+//
+// Storage (this device): mf_pos_event, mf_pos_cart, mf_pos_pending,
+// mf_pos_sales, mf_pos_seq. The Worker's PosSales tab is the shared record.
+// ═══════════════════════════════════════════════════════════════
+
+const POS = {
+  camOn:false, camStream:null, camFrame:null, lastCode:'', lastCodeAt:0,
+  kbBuf:'', kbLast:0,
+};
+
+// ── storage helpers ──
+function posLoad(key,fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
+function posSave(key,val){localStorage.setItem(key,JSON.stringify(val));}
+function posGetEvent(){return posLoad('mf_pos_event',null);}
+function posGetPending(){return posLoad('mf_pos_pending',[]);}
+function posSetPending(list){posSave('mf_pos_pending',list);}
+function posGetSales(){return posLoad('mf_pos_sales',[]);}
+
+// ── money (integer cents everywhere to avoid float drift) ──
+function toCents(n){return Math.round(Number(n||0)*100);}
+function fmt(c){return '$'+(c/100).toFixed(2);}
+function priceOf(p){
+  if(!p) return null;
+  if(p.posPrice!==undefined&&p.posPrice!==null&&p.posPrice!=='') return Number(p.posPrice);
+  if(p.price!==undefined&&p.price!==null&&p.price!=='') return Number(p.price);
+  return null;
+}
+function posNorm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'');}
+
+// ── cart ──
+function posNewCart(){
+  const seq=(posLoad('mf_pos_seq',1000)||1000)+1;
+  posSave('mf_pos_seq',seq);
+  const who=(APP.settings.username||'X').charAt(0).toUpperCase();
+  return {ref:genId(),saleNo:`MF-${who}${seq}`,lines:[]};
+}
+function posGetCart(){
+  let c=posLoad('mf_pos_cart',null);
+  if(!c||!c.ref){c=posNewCart();posSave('mf_pos_cart',c);}
+  return c;
+}
+function posSetCart(c){posSave('mf_pos_cart',c);}
+
+function posAddSku(sku,qty=1){
+  const ev=posGetEvent(); if(!ev){showToast('Start an event first','error');return false;}
+  const p=APP.products.find(x=>x.sku===sku); if(!p) return false;
+  const c=posGetCart();
+  const line=c.lines.find(l=>l.sku===sku);
+  if(line) line.qty+=qty; else c.lines.push({sku,qty});
+  posSetCart(c);
+  const inCart=(line?line.qty:qty);
+  if(priceOf(p)===null) showToast(`${p.name}: no price set — add one in Products → Edit`,'error');
+  else if(inCart>(p.homeQty||0)) showToast(`+1 ${p.name} (only ${p.homeQty||0} in stock on record)`,'warn');
+  else showToast(`+1 ${p.name}${p.variant?' — '+p.variant:''}`,'success');
+  posRenderCart();
+  return true;
+}
+function posChangeQty(sku,delta){
+  const c=posGetCart();
+  const line=c.lines.find(l=>l.sku===sku); if(!line) return;
+  line.qty+=delta;
+  if(line.qty<=0) c.lines=c.lines.filter(l=>l.sku!==sku);
+  posSetCart(c); posRenderCart();
+}
+function posRemoveLine(sku){
+  const c=posGetCart(); c.lines=c.lines.filter(l=>l.sku!==sku); posSetCart(c); posRenderCart();
+}
+function posClearCart(){
+  const c=posGetCart(); if(c.lines.length===0) return;
+  if(!confirm('Clear the cart?')) return;
+  c.lines=[]; posSetCart(c); posRenderCart(); posFocusSearch();
+}
+
+// Totals: subtotal → deal → total (tax included) → tax portion.
+function posCompute(cart,ev){
+  const lines=cart.lines.map(l=>{
+    const p=APP.products.find(x=>x.sku===l.sku)||{sku:l.sku,name:l.name||l.sku,variant:l.variant||''};
+    const unit=priceOf(p);
+    const unitCents=unit===null?null:toCents(unit);
+    return {sku:l.sku,name:p.name,variant:p.variant||'',qty:l.qty,unitCents,lineCents:unitCents===null?0:unitCents*l.qty,stock:p.homeQty,product:p};
+  });
+  const missingPrice=lines.some(l=>l.unitCents===null);
+  const subtotal=lines.reduce((s,l)=>s+l.lineCents,0);
+  const deal=(ev&&ev.deal)||{};
+  const kw=posNorm(deal.keyword);
+  const dealQty=kw?lines.filter(l=>posNorm(l.name+' '+l.variant).includes(kw)).reduce((s,l)=>s+l.qty,0):0;
+  const pct=Number(deal.pct)||0, minQty=Number(deal.minQty)||0;
+  const dealOn=pct>0&&kw&&dealQty>=minQty;
+  const discount=dealOn?Math.round(subtotal*pct/100):0;
+  const total=subtotal-discount;
+  const rate=Number(ev&&ev.taxRate)||0;
+  const tax=rate>0?total-Math.round(total/(1+rate/100)):0;
+  const dealLabel=dealOn?`${minQty}+ ${deal.keyword} ${pct}% off`:'';
+  const dealHint=(pct>0&&kw&&dealQty>0&&!dealOn)?`Add ${minQty-dealQty} more ${deal.keyword} for ${pct}% off the order`:'';
+  return {lines,missingPrice,subtotal,discount,dealLabel,dealHint,total,tax,rate};
+}
+
+// Note on the Square payment: sale number first so any Square transaction
+// can be matched back to its cart, then items, deal, tax, total. Capped so it
+// stays short; the full detail always lives in the app + PosSales tab.
+function posBuildNote(saleNo,t){
+  const items=t.lines.map(l=>`${(l.variant?l.name+' '+l.variant:l.name).replace(/\|/g,'/')} x${l.qty}`);
+  const tail=[
+    t.discount?`${t.dealLabel} (-${fmt(t.discount)})`:'',
+    t.tax?`Tax incl ${fmt(t.tax)}`:'',
+    `Total ${fmt(t.total)}`,
+  ].filter(Boolean).join(' | ');
+  const max=240;
+  let shown=[];
+  for(let i=0;i<items.length;i++){
+    const rest=items.length-i-1;
+    const candidate=[saleNo,[...shown,items[i]].join(', ')+(rest?`, +${rest} more`:''),tail].join(' | ');
+    if(candidate.length>max&&shown.length){
+      return [saleNo,shown.join(', ')+`, +${items.length-shown.length} more`,tail].join(' | ');
+    }
+    shown.push(items[i]);
+  }
+  return [saleNo,shown.join(', '),tail].join(' | ');
+}
+
+function posSnapshotSale(cart,ev,t,method,id){
+  return {
+    cartId:id, cartRef:cart.ref, saleNo:cart.saleNo, method,
+    event:ev?ev.name:'', eventId:ev?ev.id:'', taxRate:t.rate,
+    lines:t.lines.map(l=>({sku:l.sku,name:l.name,variant:l.variant,qty:l.qty,unitPrice:l.unitCents/100,lineTotal:l.lineCents/100})),
+    subtotal:t.subtotal/100, discount:t.discount/100, discountLabel:t.dealLabel,
+    tax:t.tax/100, total:t.total/100,
+    note:posBuildNote(cart.saleNo,t),
+    user:APP.settings.username||'User', createdAt:new Date().toISOString(),
+  };
+}
+
+// ── rendering ──
+function posRender(){
+  const ev=posGetEvent();
+  const standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
+  document.getElementById('pos-standalone-warn').style.display=standalone?'block':'none';
+  document.getElementById('pos-no-event').style.display=ev?'none':'block';
+  document.getElementById('pos-active').style.display=ev?'block':'none';
+  if(!ev) return;
+  document.getElementById('pos-event-name').textContent=ev.name;
+  const d=ev.deal||{};
+  document.getElementById('pos-event-meta').textContent=
+    `Tax ${ev.taxRate||0}% incl.`+((Number(d.pct)>0&&d.keyword)?` · Deal: ${d.minQty}+ ${d.keyword} = ${d.pct}% off`:' · No deal');
+  posRenderPending(); posRenderCart(); posRenderSales();
+}
+
+function posRenderResults(val){
+  const box=document.getElementById('pos-results');
+  const v=(val||'').trim().toLowerCase();
+  if(!v){box.innerHTML='';return;}
+  const hits=APP.products.filter(p=>p.name.toLowerCase().includes(v)||(p.variant||'').toLowerCase().includes(v)||p.sku.toLowerCase().includes(v)||(p.qrId||'').toLowerCase()===v).slice(0,8);
+  box.innerHTML=hits.length===0
+    ? '<div style="font-size:13px;color:var(--text-muted);padding:6px 2px">No matches</div>'
+    : hits.map(p=>{
+        const pr=priceOf(p);
+        return `<div class="pos-result" onclick="posPick('${escapeHtml(p.sku)}')"><div class="pos-result-info"><div class="pos-result-name">${escapeHtml(p.name)}</div><div class="pos-result-sub">${escapeHtml(p.variant||p.sku)} · ${p.homeQty||0} in stock</div></div><div class="pos-result-price">${pr===null?'<span style="color:var(--danger);font-size:12px">No price</span>':fmt(toCents(pr))}</div></div>`;
+      }).join('');
+}
+function posPick(sku){
+  posAddSku(sku);
+  const s=document.getElementById('pos-search'); s.value=''; posRenderResults('');
+  posFocusSearch();
+}
+
+function posRenderCart(){
+  const ev=posGetEvent(); const cart=posGetCart();
+  const t=posCompute(cart,ev);
+  document.getElementById('pos-sale-no').textContent=cart.lines.length?'· '+cart.saleNo:'';
+  const list=document.getElementById('pos-cart');
+  list.innerHTML=t.lines.length===0
+    ? '<div class="empty-state" style="padding:18px"><p>Scan an item to start a sale</p></div>'
+    : t.lines.map(l=>{
+        const over=l.qty>(l.stock||0);
+        const sub=l.unitCents===null
+          ? '<span class="pos-line-sub warn">No price — set it in Products → Edit</span>'
+          : `<span class="pos-line-sub${over?' warn':''}">${escapeHtml(l.variant||l.sku)} · ${fmt(l.unitCents)}${over?` · only ${l.stock||0} on record`:''}</span>`;
+        return `<div class="pos-line"><div class="pos-line-info"><div class="pos-line-name">${escapeHtml(l.name)}</div>${sub}</div>
+          <div class="pos-stepper"><button onclick="posChangeQty('${escapeHtml(l.sku)}',-1)">−</button><span>${l.qty}</span><button onclick="posChangeQty('${escapeHtml(l.sku)}',1)">+</button></div>
+          <div class="pos-line-total">${l.unitCents===null?'—':fmt(l.lineCents)}</div>
+          <button class="pos-line-x" onclick="posRemoveLine('${escapeHtml(l.sku)}')" aria-label="Remove">×</button></div>`;
+      }).join('');
+  let rows='';
+  if(t.lines.length){
+    rows+=`<div class="pos-tot-row"><span>Subtotal</span><span>${fmt(t.subtotal)}</span></div>`;
+    if(t.discount) rows+=`<div class="pos-tot-row deal"><span>${escapeHtml(t.dealLabel)}</span><span>−${fmt(t.discount)}</span></div>`;
+    if(t.dealHint) rows+=`<div class="pos-tot-row hint"><span>${escapeHtml(t.dealHint)}</span></div>`;
+    rows+=`<div class="pos-tot-row grand"><span>Total</span><span>${fmt(t.total)}</span></div>`;
+    if(t.rate) rows+=`<div class="pos-tot-row small"><span>Includes tax (${t.rate}%)</span><span>${fmt(t.tax)}</span></div>`;
+  }
+  document.getElementById('pos-totals').innerHTML=rows;
+  const can=t.lines.length>0&&!t.missingPrice&&t.total>0;
+  const cb=document.getElementById('pos-card-btn'), kb=document.getElementById('pos-cash-btn');
+  cb.disabled=!can; kb.disabled=!can;
+  cb.textContent=can?`Charge ${fmt(t.total)}`:'Charge Card';
+}
+
+function posRenderPending(){
+  const wrap=document.getElementById('pos-pending-card');
+  const pend=posGetPending();
+  if(pend.length===0){wrap.innerHTML='';return;}
+  wrap.innerHTML=`<div class="card pos-pending"><div class="card-title" style="color:var(--warning)">Unfinished card payment${pend.length>1?'s':''}</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;line-height:1.45">Square didn't report back on ${pend.length>1?'these':'this'}. Check the Square app's transaction list: if it was charged, tap <b>Paid</b>; if not, send it back to the cart or discard it.</p>
+    ${pend.map(s=>`<div class="pos-pending-item">
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600"><span>${escapeHtml(s.saleNo)}</span><span>${fmt(toCents(s.total))}</span></div>
+      <div style="font-size:12px;color:var(--text-muted)">${new Date(s.createdAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${escapeHtml(s.lines.map(l=>`${l.name}${l.variant?' '+l.variant:''} x${l.qty}`).join(', '))}</div>
+      <div class="pos-pending-actions">
+        <button class="paid" onclick="posResolvePending('${s.cartId}','paid')">Paid</button>
+        <button onclick="posResolvePending('${s.cartId}','cart')">Back to cart</button>
+        <button class="discard" onclick="posResolvePending('${s.cartId}','discard')">Discard</button>
+      </div></div>`).join('')}</div>`;
+}
+
+function posRenderSales(){
+  const ev=posGetEvent();
+  const sales=posGetSales().filter(s=>!ev||s.eventId===ev.id);
+  const total=sales.reduce((s,x)=>s+toCents(x.total),0);
+  document.getElementById('pos-sales-count').textContent=sales.length?`${sales.length} · ${fmt(total)}`:'';
+  document.getElementById('pos-sales-list').innerHTML=sales.length===0
+    ? '<div class="empty-state" style="padding:16px"><p>No sales yet</p></div>'
+    : [...sales].reverse().slice(0,30).map(s=>`<div class="pos-sale-row">
+        <div class="pos-sale-no">${escapeHtml(s.saleNo)}</div>
+        <div class="pos-sale-items">${new Date(s.paidAt||s.createdAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${escapeHtml(s.lines.map(l=>`${l.name}${l.variant?' '+l.variant:''} x${l.qty}`).join(', '))}</div>
+        <span class="pos-sale-method ${s.method==='cash'?'m-cash':'m-card'}">${s.method==='cash'?'Cash':'Card'}</span>
+        <div class="pos-sale-amt">${fmt(toCents(s.total))}</div></div>`).join('');
+}
+
+// ── event setup ──
+function posOpenEventModal(editing){
+  const ev=posGetEvent();
+  const last=posLoad('mf_pos_last_event',{});
+  const src=editing&&ev?ev:{
+    name:'', taxRate:last.taxRate??8.2,
+    deal:last.deal||{keyword:'pokeball',minQty:2,pct:20},
+  };
+  document.getElementById('pos-event-modal-title').textContent=editing?'Edit Event':'Start Event';
+  document.getElementById('pos-ev-name').value=src.name||'';
+  document.getElementById('pos-ev-tax').value=src.taxRate??'';
+  document.getElementById('pos-ev-deal-kw').value=(src.deal&&src.deal.keyword)||'';
+  document.getElementById('pos-ev-deal-min').value=(src.deal&&src.deal.minQty)||'';
+  document.getElementById('pos-ev-deal-pct').value=(src.deal&&src.deal.pct)??'';
+  document.getElementById('pos-event-modal').dataset.editing=editing?'1':'';
+  document.getElementById('pos-event-modal').classList.add('open');
+}
+function posSaveEvent(){
+  const name=document.getElementById('pos-ev-name').value.trim();
+  const tax=parseFloat(document.getElementById('pos-ev-tax').value);
+  if(!name){showToast('Give the event a name','error');return;}
+  if(isNaN(tax)||tax<0||tax>20){showToast('Enter a tax rate between 0 and 20','error');return;}
+  const deal={
+    keyword:document.getElementById('pos-ev-deal-kw').value.trim(),
+    minQty:parseInt(document.getElementById('pos-ev-deal-min').value)||1,
+    pct:parseFloat(document.getElementById('pos-ev-deal-pct').value)||0,
+  };
+  const editing=document.getElementById('pos-event-modal').dataset.editing==='1';
+  const cur=posGetEvent();
+  const ev=editing&&cur?{...cur,name,taxRate:tax,deal}:{id:genId(),name,taxRate:tax,deal,startedAt:new Date().toISOString()};
+  posSave('mf_pos_event',ev);
+  posSave('mf_pos_last_event',{taxRate:tax,deal});
+  posCloseModal(null,'pos-event-modal');
+  showToast(editing?'Event updated':`${name} started`,'success');
+  posRender(); posFocusSearch();
+}
+function posEventStats(){
+  const ev=posGetEvent();
+  const sales=posGetSales().filter(s=>ev&&s.eventId===ev.id);
+  const sum=k=>sales.reduce((s,x)=>s+toCents(x[k]),0);
+  const card=sales.filter(s=>s.method!=='cash').reduce((s,x)=>s+toCents(x.total),0);
+  const units=sales.reduce((s,x)=>s+x.lines.reduce((a,l)=>a+l.qty,0),0);
+  return {sales,count:sales.length,gross:sum('total'),discount:sum('discount'),tax:sum('tax'),card,cash:sum('total')-card,units};
+}
+function posOpenEndEvent(){
+  const st=posEventStats();
+  document.getElementById('pos-end-summary').innerHTML=`
+    <div><b>${st.count}</b><span>Sales</span></div><div><b>${st.units}</b><span>Units</span></div>
+    <div><b>${fmt(st.gross)}</b><span>Total taken</span></div><div><b>${fmt(st.tax)}</b><span>Tax included</span></div>
+    <div><b>${fmt(st.card)}</b><span>Card</span></div><div><b>${fmt(st.cash)}</b><span>Cash</span></div>
+    <div><b>${fmt(st.discount)}</b><span>Deal discounts</span></div><div><b>${loadOutbox().length}</b><span>Waiting to sync</span></div>`;
+  const pend=posGetPending().length;
+  document.getElementById('pos-end-warn').innerHTML=pend
+    ? `<div class="pos-warn">${pend} unfinished card payment${pend>1?'s':''} still need a Paid or Discard decision.</div>`:'';
+  document.getElementById('pos-end-modal').classList.add('open');
+}
+function posEndEvent(){
+  if(posGetPending().length&&!confirm('There are unfinished card payments. End the event anyway? (They stay in the list.)')) return;
+  localStorage.removeItem('mf_pos_event');
+  posCloseModal(null,'pos-end-modal');
+  showToast('Event ended','info');
+  posRender();
+}
+function posExportCsv(){
+  const st=posEventStats(); const ev=posGetEvent();
+  const rows=[['saleNo','paidAt','method','sku','name','variant','qty','unitPrice','lineTotal','saleSubtotal','saleDiscount','saleTaxIncluded','saleTotal','squareTxId']];
+  st.sales.forEach(s=>s.lines.forEach((l,i)=>rows.push([s.saleNo,s.paidAt||s.createdAt,s.method,l.sku,l.name,l.variant,l.qty,l.unitPrice,l.lineTotal,
+    i===0?s.subtotal:'',i===0?s.discount:'',i===0?s.tax:'',i===0?s.total:'',i===0?(s.squareTxId||''):''])));
+  const csv=rows.map(r=>r.map(v=>{const x=String(v??'');return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const fname=`Mythikos_Sales_${(ev?ev.name:'event').replace(/[^a-z0-9]+/gi,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
+  try{
+    const file=new File([blob],fname,{type:'text/csv'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file]}).catch(()=>{});return;}
+  }catch(e){}
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; a.click();
+}
+
+// ── committing a sale (cash, Square success, or "Paid" on a pending cart) ──
+function posCommitSale(sale,extra){
+  const s={...sale,...extra,paidAt:new Date().toISOString()};
+  const sales=posGetSales();
+  if(sales.some(x=>x.cartId===s.cartId)){posSetPending(posGetPending().filter(p=>p.cartId!==s.cartId));return s;} // already recorded here
+  // Local stock + activity feed, so this device's counts update immediately.
+  s.lines.forEach(l=>{
+    const p=APP.products.find(x=>x.sku===l.sku);
+    if(p) p.homeQty=Math.max(0,(p.homeQty||0)-l.qty);
+    APP.transactions.push({timestamp:s.paidAt,sku:l.sku,name:l.name,variant:l.variant,type:'sale',qty:l.qty,bucket:'home',
+      platform:s.method==='cash'?'cash':'square-pos',notes:`${s.saleNo}${s.event?' · '+s.event:''}`,user:s.user});
+  });
+  saveLocalData();
+  sales.push(s); posSave('mf_pos_sales',sales.slice(-1000));
+  posSetPending(posGetPending().filter(p=>p.cartId!==s.cartId));
+  // Durable + idempotent on cartId: Worker decrements, logs, pushes to Squarespace.
+  apiCall('POST','/pos-sale',{sale:{
+    cartId:s.cartId,saleNo:s.saleNo,method:s.method,squareTxId:s.squareTxId||'',event:s.event,
+    lines:s.lines,subtotal:s.subtotal,discount:s.discount,discountLabel:s.discountLabel,tax:s.tax,total:s.total,
+    user:s.user,timestamp:s.paidAt,
+  }});
+  // Clear the cart if this sale came from it.
+  const cart=posLoad('mf_pos_cart',null);
+  if(cart&&cart.ref===s.cartRef) posSave('mf_pos_cart',posNewCart());
+  renderDashboard(); renderProductList();
+  return s;
+}
+function posShowPaid(s,changeCents){
+  document.getElementById('pos-paid-total').textContent=fmt(toCents(s.total));
+  document.getElementById('pos-paid-meta').textContent=`${s.saleNo} · ${s.method==='cash'?'Cash':'Card'} · ${s.lines.reduce((a,l)=>a+l.qty,0)} item${s.lines.reduce((a,l)=>a+l.qty,0)===1?'':'s'}`;
+  const ch=document.getElementById('pos-paid-change');
+  if(changeCents!==undefined&&changeCents>0){ch.textContent='Change '+fmt(changeCents);ch.style.display='block';}
+  else ch.style.display='none';
+  document.getElementById('pos-paid-modal').classList.add('open');
+}
+
+// ── cash ──
+function posOpenCash(){
+  const t=posCompute(posGetCart(),posGetEvent());
+  if(!t.lines.length||t.missingPrice) return;
+  document.getElementById('pos-cash-due').textContent=fmt(t.total);
+  document.getElementById('pos-cash-recv').value='';
+  const due=t.total/100;
+  const opts=[due,...[5,10,20,40,50,100].filter(b=>b>due)].slice(0,4);
+  document.getElementById('pos-quick-cash').innerHTML=opts.map((v,i)=>`<button onclick="document.getElementById('pos-cash-recv').value='${v.toFixed(2)}';posUpdateChange()">${i===0?'Exact':'$'+v}</button>`).join('');
+  document.getElementById('pos-cash-change').textContent='—';
+  document.getElementById('pos-cash-modal').classList.add('open');
+}
+function posUpdateChange(){
+  const t=posCompute(posGetCart(),posGetEvent());
+  const recv=toCents(document.getElementById('pos-cash-recv').value);
+  document.getElementById('pos-cash-change').textContent=recv?(recv>=t.total?fmt(recv-t.total):'Short '+fmt(t.total-recv)):'—';
+}
+function posConfirmCash(){
+  const ev=posGetEvent(), cart=posGetCart(), t=posCompute(cart,ev);
+  if(!t.lines.length||t.missingPrice) return;
+  const recvRaw=document.getElementById('pos-cash-recv').value;
+  const recv=recvRaw===''?t.total:toCents(recvRaw);
+  if(recv<t.total){showToast('Cash received is less than the total','error');return;}
+  const sale=posSnapshotSale(cart,ev,t,'cash',genId());
+  const s=posCommitSale(sale,{cashReceived:recv/100,change:(recv-t.total)/100});
+  posCloseModal(null,'pos-cash-modal');
+  posRender(); posShowPaid(s,recv-t.total);
+}
+
+// ── Square hand-off ──
+function posSquareCallbackUrl(){return (APP.settings.squareCallbackUrl||CONFIG.squareCallbackUrl||(location.origin+location.pathname)).trim();}
+function posChargeCard(){
+  const appId=(APP.settings.squareAppId||CONFIG.squareAppId||'').trim();
+  if(!appId){showToast('Add your Square Application ID in Settings first','error');return;}
+  const ev=posGetEvent(), cart=posGetCart(), t=posCompute(cart,ev);
+  if(!t.lines.length||t.missingPrice||t.total<=0) return;
+  const sale=posSnapshotSale(cart,ev,t,'square',genId());
+  // One pending attempt per cart: a retry replaces the earlier attempt.
+  const pend=posGetPending().filter(p=>p.cartRef!==cart.ref);
+  pend.push(sale); posSetPending(pend);
+  // state comes back untouched on the callback. It carries the cart itself so
+  // the sale can still be recorded if Square returns to a different tab.
+  const state=JSON.stringify({c:sale.cartId,r:sale.cartRef,n:sale.saleNo,e:sale.event,ei:sale.eventId,x:sale.taxRate,
+    d:sale.discount,dl:sale.discountLabel,t:sale.tax,s:sale.subtotal,u:sale.user,
+    l:sale.lines.map(l=>[l.sku,l.qty,l.unitPrice,l.name,l.variant])});
+  const isAndroid=/android/i.test(navigator.userAgent);
+  let url;
+  if(isAndroid){
+    const e=encodeURIComponent;
+    url='intent:#Intent;action=com.squareup.pos.action.CHARGE;package=com.squareup;'
+      +'S.com.squareup.pos.WEB_CALLBACK_URI='+e(posSquareCallbackUrl())+';'
+      +'S.com.squareup.pos.CLIENT_ID='+e(appId)+';'
+      +'S.com.squareup.pos.API_VERSION=v2.0;'
+      +'i.com.squareup.pos.TOTAL_AMOUNT='+toCents(sale.total)+';'
+      +'S.com.squareup.pos.CURRENCY_CODE=USD;'
+      +'S.com.squareup.pos.TENDER_TYPES=com.squareup.pos.TENDER_CARD;'
+      +'S.com.squareup.pos.NOTE='+e(sale.note)+';'
+      +'S.com.squareup.pos.REQUEST_METADATA='+e(state)+';'
+      +'l.com.squareup.pos.AUTO_RETURN_TIMEOUT_MS=3200;'
+      +'end';
+  }else{
+    const data={
+      amount_money:{amount:toCents(sale.total),currency_code:'USD'},
+      callback_url:posSquareCallbackUrl(),
+      client_id:appId,
+      version:'1.3',
+      notes:sale.note,
+      state,
+      options:{supported_tender_types:['CREDIT_CARD'],clear_default_fees:true,auto_return:true,skip_receipt:false},
+    };
+    url='square-commerce-v1://payment/create?data='+encodeURIComponent(JSON.stringify(data));
+  }
+  posRenderPending();
+  posOpenUrl(url);
+}
+function posOpenUrl(url){window.location.href=url;}
+
+// Called on every page load: did Square just send us back here?
+function posHandleSquareCallback(){
+  const q=new URLSearchParams(location.search);
+  let r=null;
+  if(q.has('data')){
+    try{
+      const d=JSON.parse(q.get('data'));
+      r={ok:d.status==='ok',txId:d.transaction_id||'',clientTxId:d.client_transaction_id||'',error:d.error_code||'',state:d.state||''};
+    }catch(e){r={ok:false,error:'data_invalid',state:''};}
+  }else if(q.has('com.squareup.pos.SERVER_TRANSACTION_ID')||q.has('com.squareup.pos.CLIENT_TRANSACTION_ID')||q.has('com.squareup.pos.ERROR_CODE')){
+    const err=q.get('com.squareup.pos.ERROR_CODE')||'';
+    r={ok:!err,txId:q.get('com.squareup.pos.SERVER_TRANSACTION_ID')||'',clientTxId:q.get('com.squareup.pos.CLIENT_TRANSACTION_ID')||'',
+      error:err?err.replace('com.squareup.pos.ERROR_','').toLowerCase():'',state:q.get('com.squareup.pos.REQUEST_METADATA')||''};
+  }
+  if(!r) return false;
+  history.replaceState(null,'',location.pathname); // so a refresh can't replay it
+  let st=null; try{st=r.state?JSON.parse(r.state):null;}catch(e){}
+  const cartId=st&&st.c;
+  let sale=cartId?posGetPending().find(p=>p.cartId===cartId):null;
+  if(!sale&&st&&r.ok){
+    // Not in this tab's storage (e.g. the sale started in the home-screen app):
+    // rebuild it from the state Square handed back.
+    sale={cartId:st.c,cartRef:st.r,saleNo:st.n,method:'square',event:st.e||'',eventId:st.ei||'',taxRate:st.x||0,
+      lines:(st.l||[]).map(a=>({sku:a[0],qty:a[1],unitPrice:a[2],lineTotal:Math.round(a[1]*a[2]*100)/100,name:a[3]||a[0],variant:a[4]||''})),
+      subtotal:st.s||0,discount:st.d||0,discountLabel:st.dl||'',tax:st.t||0,user:st.u||APP.settings.username||'User',createdAt:new Date().toISOString()};
+    sale.total=Math.round((sale.subtotal-sale.discount)*100)/100;
+  }
+  showView('pos');
+  if(r.ok&&sale){
+    const s=posCommitSale(sale,{method:'square',squareTxId:r.txId||r.clientTxId||''});
+    posRender(); posShowPaid(s);
+    if(!r.txId) showToast('Paid in Square Offline Mode — it will process when Square reconnects','info');
+  }else if(r.ok){
+    showToast('Square reported a payment, but the cart could not be matched. Check pending carts.','error');
+  }else{
+    if(cartId) posSetPending(posGetPending().filter(p=>p.cartId!==cartId)); // not charged
+    const msgs={
+      payment_canceled:'Payment canceled — cart kept',
+      not_logged_in:'Square POS isn\'t signed in — sign in and try again',
+      no_network_connection:'Square has no connection — try again or take cash',
+      could_not_perform:'Square has an unfinished sale open — finish or cancel it in Square, then retry',
+      user_not_active:'Card processing isn\'t activated on this Square account',
+      unsupported_api_version:'Update the Square POS app, then retry',
+      data_invalid:'Square rejected the request (check the Application ID and callback URL in Settings)',
+    };
+    posRender();
+    showToast(msgs[r.error]||('Square error: '+(r.error||'unknown')+' — cart kept'),r.error==='payment_canceled'?'info':'error');
+  }
+  return true;
+}
+
+// Pending carts: ask the Worker whether any were already recorded (e.g. via
+// a callback that landed in another tab) and settle those automatically.
+async function posCheckPendingWithWorker(){
+  const pend=posGetPending(); if(!pend.length||!APP.settings.workerUrl) return;
+  for(const s of pend){
+    try{
+      const res=await fetch(APP.settings.workerUrl+'/pos-sale?cartId='+encodeURIComponent(s.cartId)).then(r=>r.json());
+      if(res&&res.found) posCommitSale(s,{squareTxId:res.squareTxId||''});
+    }catch(e){/* offline — leave it for the user */}
+  }
+  if(APP.currentView==='pos') posRender();
+}
+function posResolvePending(cartId,action){
+  const s=posGetPending().find(p=>p.cartId===cartId); if(!s) return;
+  if(action==='paid'){
+    if(!confirm(`Mark ${s.saleNo} (${fmt(toCents(s.total))}) as paid? Only do this if Square shows the charge.`)) return;
+    posCommitSale(s,{squareTxId:'manual'}); showToast(`${s.saleNo} recorded`,'success');
+  }else if(action==='cart'){
+    const cur=posGetCart();
+    if(cur.lines.length&&cur.ref!==s.cartRef&&!confirm('Replace the current cart with this one?')) return;
+    posSave('mf_pos_cart',{ref:s.cartRef,saleNo:s.saleNo,lines:s.lines.map(l=>({sku:l.sku,qty:l.qty}))});
+    posSetPending(posGetPending().filter(p=>p.cartId!==cartId));
+  }else{
+    if(!confirm(`Discard ${s.saleNo}? Nothing is recorded and stock isn't changed.`)) return;
+    posSetPending(posGetPending().filter(p=>p.cartId!==cartId));
+  }
+  posRender();
+}
+
+// ── scanning: Bluetooth scanner (types like a keyboard) + camera ──
+function posLookup(code){
+  const c=String(code||'').trim(); if(!c) return null;
+  const lc=c.toLowerCase();
+  return APP.products.find(p=>(p.qrId||'').toLowerCase()===lc||p.sku.toLowerCase()===lc||(p.sqId||'')===c)||null;
+}
+function posScanned(code){
+  const p=posLookup(code);
+  if(!p){showToast('Not found: '+code,'error');return;}
+  posAddSku(p.sku);
+}
+function posSearchKey(e){
+  if(e.key!=='Enter') return;
+  e.preventDefault();
+  const el=e.target; const v=el.value.trim(); if(!v) return;
+  const exact=posLookup(v);
+  if(exact){posAddSku(exact.sku);}
+  else{
+    const lv=v.toLowerCase();
+    const hits=APP.products.filter(p=>p.name.toLowerCase().includes(lv)||(p.variant||'').toLowerCase().includes(lv)||p.sku.toLowerCase().includes(lv));
+    if(hits.length===1) posAddSku(hits[0].sku);
+    else{showToast(hits.length?'Pick one from the list':'Not found: '+v,hits.length?'info':'error');return;}
+  }
+  el.value=''; posRenderResults('');
+}
+// A hardware scanner fires keystrokes a few ms apart, ending with Enter.
+// When the search box isn't focused, collect them here.
+document.addEventListener('keydown',e=>{
+  if(APP.currentView!=='pos') return;
+  const tag=(document.activeElement&&document.activeElement.tagName)||'';
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  if(document.querySelector('.modal-overlay.open')) return;
+  const now=Date.now();
+  if(now-POS.kbLast>100) POS.kbBuf='';
+  POS.kbLast=now;
+  if(e.key==='Enter'){ if(POS.kbBuf.length>=2){posScanned(POS.kbBuf);} POS.kbBuf=''; e.preventDefault(); return; }
+  if(e.key.length===1) POS.kbBuf+=e.key;
+});
+function posFocusSearch(){
+  // Only auto-focus on devices with a hardware keyboard/scanner feel; on a
+  // touch screen this would pop the on-screen keyboard, so leave it alone.
+  if(window.matchMedia&&window.matchMedia('(pointer:fine)').matches){
+    const s=document.getElementById('pos-search'); if(s) s.focus();
+  }
+}
+function posToggleCamera(){POS.camOn?posStopCamera():posStartCamera();}
+function posStartCamera(){
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+    POS.camStream=stream; POS.camOn=true;
+    const v=document.getElementById('pos-video'); v.srcObject=stream; v.play();
+    document.getElementById('pos-cam').classList.add('on');
+    document.getElementById('pos-cam-btn').classList.add('on');
+    v.onloadedmetadata=()=>posCamFrame();
+  }).catch(()=>showToast('Camera access denied','error'));
+}
+function posStopCamera(){
+  POS.camOn=false;
+  if(POS.camStream){POS.camStream.getTracks().forEach(t=>t.stop());POS.camStream=null;}
+  if(POS.camFrame) cancelAnimationFrame(POS.camFrame);
+  const v=document.getElementById('pos-video'); if(v) v.srcObject=null;
+  const c=document.getElementById('pos-cam'); if(c) c.classList.remove('on');
+  const b=document.getElementById('pos-cam-btn'); if(b) b.classList.remove('on');
+}
+function posCamFrame(){
+  if(!POS.camOn) return;
+  const v=document.getElementById('pos-video');
+  if(v.readyState===v.HAVE_ENOUGH_DATA){
+    const cv=posCamFrame.cv||(posCamFrame.cv=document.createElement('canvas'));
+    cv.width=v.videoWidth; cv.height=v.videoHeight;
+    const ctx=cv.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(v,0,0,cv.width,cv.height);
+    const code=jsQR(ctx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height,{inversionAttempts:'dontInvert'});
+    // Keep scanning for the next item; ignore the same code for 2s so one
+    // label held in frame doesn't add itself repeatedly.
+    if(code&&code.data&&!(code.data===POS.lastCode&&Date.now()-POS.lastCodeAt<2000)){
+      POS.lastCode=code.data; POS.lastCodeAt=Date.now();
+      posScanned(code.data);
+    }
+  }
+  POS.camFrame=requestAnimationFrame(posCamFrame);
+}
+
+function posCloseModal(e,id){if(!e||e.target===document.getElementById(id))document.getElementById(id).classList.remove('open');}
 
 window.addEventListener('load',init);
 
