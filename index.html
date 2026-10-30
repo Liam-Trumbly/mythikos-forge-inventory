@@ -474,7 +474,7 @@
     <!-- No event yet -->
     <div id="pos-no-event" class="card">
       <div class="card-title">Start an Event</div>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">Set the event name and the local sales tax rate. Prices already include tax, so the rate is only used to show and log how much of each sale is tax.</p>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">Set the event name and the local sales tax rate. By default, card sales add tax on top of the price and cash prices include tax; you can change either one per event.</p>
       <button class="save-btn" style="margin-bottom:0" onclick="posOpenEventModal()">Start Event</button>
     </div>
 
@@ -684,7 +684,14 @@
     <div class="modal-handle"></div>
     <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:16px;color:var(--purple)" id="pos-event-modal-title">Start Event</div>
     <div class="settings-field"><label>Event name</label><input type="text" id="pos-ev-name" placeholder="e.g. Rocky Mountain Con"></div>
-    <div class="settings-field"><label>Sales tax rate (%) — included in prices</label><input type="number" id="pos-ev-tax" step="0.001" min="0" max="20" placeholder="8.2"></div>
+    <div class="settings-field"><label>Sales tax rate (%)</label><input type="number" id="pos-ev-tax" step="0.001" min="0" max="20" placeholder="8.2"></div>
+    <div class="settings-field"><label>Add tax on top of the price for</label>
+      <div style="display:flex;gap:18px;padding:4px 2px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--text)"><input type="checkbox" id="pos-ev-ontop-card" style="width:18px;height:18px;accent-color:var(--purple)"> Card</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--text)"><input type="checkbox" id="pos-ev-ontop-cash" style="width:18px;height:18px;accent-color:var(--purple)"> Cash</label>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted)">Unchecked = the price already includes tax.</p>
+    </div>
     <div class="settings-label" style="margin-top:6px">Deal</div>
     <div class="card" style="padding-bottom:4px">
       <div class="settings-field"><label>Products whose name contains</label><input type="text" id="pos-ev-deal-kw" placeholder="pokeball"></div>
@@ -1763,9 +1770,11 @@ function showToast(msg,type='info') {
 // decrements stock, and the Worker pushes the new counts to Squarespace.
 // Cash skips Square entirely.
 //
-// Prices INCLUDE tax. The event's tax rate is only used to back out how much
-// of each sale is tax, for the note and the sales log. Square is told to
-// clear its own default taxes so it charges exactly our total.
+// Tax is set per event and per payment method: by default CARD sales add tax
+// on top of the price, CASH sales treat the price as tax-included (so cash
+// stays a round number). Either can be flipped in the event settings. The app
+// always sends Square the final amount and tells it to clear its own default
+// taxes, so Square never adds tax a second time.
 //
 // Storage (this device): mf_pos_event, mf_pos_cart, mf_pos_pending,
 // mf_pos_sales, mf_pos_seq. The Worker's PosSales tab is the shared record.
@@ -1840,7 +1849,12 @@ function posClearCart(){
 }
 
 // Totals: subtotal → deal → total (tax included) → tax portion.
-function posCompute(cart,ev){
+// Is tax added on top for this payment method? Default: card yes, cash no.
+function posTaxOnTop(ev,method){
+  const o=(ev&&ev.taxOnTop)||{card:true,cash:false};
+  return method==='cash'?!!o.cash:!!o.card;
+}
+function posCompute(cart,ev,method='card'){
   const lines=cart.lines.map(l=>{
     const p=APP.products.find(x=>x.sku===l.sku)||{sku:l.sku,name:l.name||l.sku,variant:l.variant||''};
     const unit=priceOf(p);
@@ -1855,12 +1869,15 @@ function posCompute(cart,ev){
   const pct=Number(deal.pct)||0, minQty=Number(deal.minQty)||0;
   const dealOn=pct>0&&kw&&dealQty>=minQty;
   const discount=dealOn?Math.round(subtotal*pct/100):0;
-  const total=subtotal-discount;
+  const afterDeal=subtotal-discount;
   const rate=Number(ev&&ev.taxRate)||0;
-  const tax=rate>0?total-Math.round(total/(1+rate/100)):0;
+  const onTop=posTaxOnTop(ev,method);
+  // On top: tax = rate × price, added. Included: back the tax out of the price.
+  const tax=rate>0?(onTop?Math.round(afterDeal*rate/100):afterDeal-Math.round(afterDeal/(1+rate/100))):0;
+  const total=onTop?afterDeal+tax:afterDeal;
   const dealLabel=dealOn?`${minQty}+ ${deal.keyword} ${pct}% off`:'';
   const dealHint=(pct>0&&kw&&dealQty>0&&!dealOn)?`Add ${minQty-dealQty} more ${deal.keyword} for ${pct}% off the order`:'';
-  return {lines,missingPrice,subtotal,discount,dealLabel,dealHint,total,tax,rate};
+  return {lines,missingPrice,subtotal,discount,dealLabel,dealHint,afterDeal,total,tax,rate,onTop,method};
 }
 
 // Note on the Square payment: sale number first so any Square transaction
@@ -1870,7 +1887,7 @@ function posBuildNote(saleNo,t){
   const items=t.lines.map(l=>`${(l.variant?l.name+' '+l.variant:l.name).replace(/\|/g,'/')} x${l.qty}`);
   const tail=[
     t.discount?`${t.dealLabel} (-${fmt(t.discount)})`:'',
-    t.tax?`Tax incl ${fmt(t.tax)}`:'',
+    t.tax?`${t.onTop?'Tax':'Tax incl'} ${fmt(t.tax)}`:'',
     `Total ${fmt(t.total)}`,
   ].filter(Boolean).join(' | ');
   const max=240;
@@ -1889,7 +1906,7 @@ function posBuildNote(saleNo,t){
 function posSnapshotSale(cart,ev,t,method,id){
   return {
     cartId:id, cartRef:cart.ref, saleNo:cart.saleNo, method,
-    event:ev?ev.name:'', eventId:ev?ev.id:'', taxRate:t.rate,
+    event:ev?ev.name:'', eventId:ev?ev.id:'', taxRate:t.rate, taxOnTop:t.onTop,
     lines:t.lines.map(l=>({sku:l.sku,name:l.name,variant:l.variant,qty:l.qty,unitPrice:l.unitCents/100,lineTotal:l.lineCents/100})),
     subtotal:t.subtotal/100, discount:t.discount/100, discountLabel:t.dealLabel,
     tax:t.tax/100, total:t.total/100,
@@ -1909,7 +1926,7 @@ function posRender(){
   document.getElementById('pos-event-name').textContent=ev.name;
   const d=ev.deal||{};
   document.getElementById('pos-event-meta').textContent=
-    `Tax ${ev.taxRate||0}% incl.`+((Number(d.pct)>0&&d.keyword)?` · Deal: ${d.minQty}+ ${d.keyword} = ${d.pct}% off`:' · No deal');
+    `Tax ${ev.taxRate||0}% · ${posTaxOnTop(ev,'card')?'added on card':'incl. on card'}, ${posTaxOnTop(ev,'cash')?'added on cash':'incl. on cash'}`+((Number(d.pct)>0&&d.keyword)?` · Deal: ${d.minQty}+ ${d.keyword} = ${d.pct}% off`:' · No deal');
   posRenderPending(); posRenderCart(); posRenderSales();
 }
 
@@ -1933,7 +1950,8 @@ function posPick(sku){
 
 function posRenderCart(){
   const ev=posGetEvent(); const cart=posGetCart();
-  const t=posCompute(cart,ev);
+  const t=posCompute(cart,ev,'card');
+  const tc=posCompute(cart,ev,'cash');
   document.getElementById('pos-sale-no').textContent=cart.lines.length?'· '+cart.saleNo:'';
   const list=document.getElementById('pos-cart');
   list.innerHTML=t.lines.length===0
@@ -1953,14 +1971,23 @@ function posRenderCart(){
     rows+=`<div class="pos-tot-row"><span>Subtotal</span><span>${fmt(t.subtotal)}</span></div>`;
     if(t.discount) rows+=`<div class="pos-tot-row deal"><span>${escapeHtml(t.dealLabel)}</span><span>−${fmt(t.discount)}</span></div>`;
     if(t.dealHint) rows+=`<div class="pos-tot-row hint"><span>${escapeHtml(t.dealHint)}</span></div>`;
-    rows+=`<div class="pos-tot-row grand"><span>Total</span><span>${fmt(t.total)}</span></div>`;
-    if(t.rate) rows+=`<div class="pos-tot-row small"><span>Includes tax (${t.rate}%)</span><span>${fmt(t.tax)}</span></div>`;
+    if(t.total===tc.total){
+      if(t.rate&&t.onTop) rows+=`<div class="pos-tot-row"><span>Tax (${t.rate}%)</span><span>+${fmt(t.tax)}</span></div>`;
+      rows+=`<div class="pos-tot-row grand"><span>Total</span><span>${fmt(t.total)}</span></div>`;
+      if(t.rate&&!t.onTop) rows+=`<div class="pos-tot-row small"><span>Includes tax (${t.rate}%)</span><span>${fmt(t.tax)}</span></div>`;
+    }else{
+      rows+=`<div class="pos-tot-row grand"><span>Card</span><span>${fmt(t.total)}</span></div>`;
+      rows+=`<div class="pos-tot-row small"><span>${t.onTop?'Tax added':'Includes tax'} (${t.rate}%)</span><span>${t.onTop?'+':''}${fmt(t.tax)}</span></div>`;
+      rows+=`<div class="pos-tot-row grand" style="font-size:18px"><span>Cash</span><span>${fmt(tc.total)}</span></div>`;
+      rows+=`<div class="pos-tot-row small"><span>${tc.onTop?'Tax added':'Includes tax'} (${tc.rate}%)</span><span>${tc.onTop?'+':''}${fmt(tc.tax)}</span></div>`;
+    }
   }
   document.getElementById('pos-totals').innerHTML=rows;
   const can=t.lines.length>0&&!t.missingPrice&&t.total>0;
   const cb=document.getElementById('pos-card-btn'), kb=document.getElementById('pos-cash-btn');
   cb.disabled=!can; kb.disabled=!can;
   cb.textContent=can?`Charge ${fmt(t.total)}`:'Charge Card';
+  kb.textContent=can&&tc.total!==t.total?`Cash ${fmt(tc.total)}`:'Cash';
 }
 
 function posRenderPending(){
@@ -1998,12 +2025,15 @@ function posOpenEventModal(editing){
   const ev=posGetEvent();
   const last=posLoad('mf_pos_last_event',{});
   const src=editing&&ev?ev:{
-    name:'', taxRate:last.taxRate??8.2,
+    name:'', taxRate:last.taxRate??8.2, taxOnTop:last.taxOnTop||{card:true,cash:false},
     deal:last.deal||{keyword:'pokeball',minQty:2,pct:20},
   };
   document.getElementById('pos-event-modal-title').textContent=editing?'Edit Event':'Start Event';
   document.getElementById('pos-ev-name').value=src.name||'';
   document.getElementById('pos-ev-tax').value=src.taxRate??'';
+  const ot=src.taxOnTop||{card:true,cash:false};
+  document.getElementById('pos-ev-ontop-card').checked=!!ot.card;
+  document.getElementById('pos-ev-ontop-cash').checked=!!ot.cash;
   document.getElementById('pos-ev-deal-kw').value=(src.deal&&src.deal.keyword)||'';
   document.getElementById('pos-ev-deal-min').value=(src.deal&&src.deal.minQty)||'';
   document.getElementById('pos-ev-deal-pct').value=(src.deal&&src.deal.pct)??'';
@@ -2020,11 +2050,12 @@ function posSaveEvent(){
     minQty:parseInt(document.getElementById('pos-ev-deal-min').value)||1,
     pct:parseFloat(document.getElementById('pos-ev-deal-pct').value)||0,
   };
+  const taxOnTop={card:document.getElementById('pos-ev-ontop-card').checked,cash:document.getElementById('pos-ev-ontop-cash').checked};
   const editing=document.getElementById('pos-event-modal').dataset.editing==='1';
   const cur=posGetEvent();
-  const ev=editing&&cur?{...cur,name,taxRate:tax,deal}:{id:genId(),name,taxRate:tax,deal,startedAt:new Date().toISOString()};
+  const ev=editing&&cur?{...cur,name,taxRate:tax,taxOnTop,deal}:{id:genId(),name,taxRate:tax,taxOnTop,deal,startedAt:new Date().toISOString()};
   posSave('mf_pos_event',ev);
-  posSave('mf_pos_last_event',{taxRate:tax,deal});
+  posSave('mf_pos_last_event',{taxRate:tax,taxOnTop,deal});
   posCloseModal(null,'pos-event-modal');
   showToast(editing?'Event updated':`${name} started`,'success');
   posRender(); posFocusSearch();
@@ -2041,7 +2072,7 @@ function posOpenEndEvent(){
   const st=posEventStats();
   document.getElementById('pos-end-summary').innerHTML=`
     <div><b>${st.count}</b><span>Sales</span></div><div><b>${st.units}</b><span>Units</span></div>
-    <div><b>${fmt(st.gross)}</b><span>Total taken</span></div><div><b>${fmt(st.tax)}</b><span>Tax included</span></div>
+    <div><b>${fmt(st.gross)}</b><span>Total taken</span></div><div><b>${fmt(st.tax)}</b><span>Sales tax</span></div>
     <div><b>${fmt(st.card)}</b><span>Card</span></div><div><b>${fmt(st.cash)}</b><span>Cash</span></div>
     <div><b>${fmt(st.discount)}</b><span>Deal discounts</span></div><div><b>${loadOutbox().length}</b><span>Waiting to sync</span></div>`;
   const pend=posGetPending().length;
@@ -2109,7 +2140,7 @@ function posShowPaid(s,changeCents){
 
 // ── cash ──
 function posOpenCash(){
-  const t=posCompute(posGetCart(),posGetEvent());
+  const t=posCompute(posGetCart(),posGetEvent(),'cash');
   if(!t.lines.length||t.missingPrice) return;
   document.getElementById('pos-cash-due').textContent=fmt(t.total);
   document.getElementById('pos-cash-recv').value='';
@@ -2120,12 +2151,12 @@ function posOpenCash(){
   document.getElementById('pos-cash-modal').classList.add('open');
 }
 function posUpdateChange(){
-  const t=posCompute(posGetCart(),posGetEvent());
+  const t=posCompute(posGetCart(),posGetEvent(),'cash');
   const recv=toCents(document.getElementById('pos-cash-recv').value);
   document.getElementById('pos-cash-change').textContent=recv?(recv>=t.total?fmt(recv-t.total):'Short '+fmt(t.total-recv)):'—';
 }
 function posConfirmCash(){
-  const ev=posGetEvent(), cart=posGetCart(), t=posCompute(cart,ev);
+  const ev=posGetEvent(), cart=posGetCart(), t=posCompute(cart,ev,'cash');
   if(!t.lines.length||t.missingPrice) return;
   const recvRaw=document.getElementById('pos-cash-recv').value;
   const recv=recvRaw===''?t.total:toCents(recvRaw);
@@ -2141,7 +2172,7 @@ function posSquareCallbackUrl(){return (APP.settings.squareCallbackUrl||CONFIG.s
 function posChargeCard(){
   const appId=(APP.settings.squareAppId||CONFIG.squareAppId||'').trim();
   if(!appId){showToast('Add your Square Application ID in Settings first','error');return;}
-  const ev=posGetEvent(), cart=posGetCart(), t=posCompute(cart,ev);
+  const ev=posGetEvent(), cart=posGetCart(), t=posCompute(cart,ev,'card');
   if(!t.lines.length||t.missingPrice||t.total<=0) return;
   const sale=posSnapshotSale(cart,ev,t,'square',genId());
   // One pending attempt per cart: a retry replaces the earlier attempt.
@@ -2150,7 +2181,7 @@ function posChargeCard(){
   // state comes back untouched on the callback. It carries the cart itself so
   // the sale can still be recorded if Square returns to a different tab.
   const state=JSON.stringify({c:sale.cartId,r:sale.cartRef,n:sale.saleNo,e:sale.event,ei:sale.eventId,x:sale.taxRate,
-    d:sale.discount,dl:sale.discountLabel,t:sale.tax,s:sale.subtotal,u:sale.user,
+    d:sale.discount,dl:sale.discountLabel,t:sale.tax,s:sale.subtotal,g:sale.total,o:sale.taxOnTop?1:0,u:sale.user,
     l:sale.lines.map(l=>[l.sku,l.qty,l.unitPrice,l.name,l.variant])});
   const isAndroid=/android/i.test(navigator.userAgent);
   let url;
@@ -2209,7 +2240,8 @@ function posHandleSquareCallback(){
     sale={cartId:st.c,cartRef:st.r,saleNo:st.n,method:'square',event:st.e||'',eventId:st.ei||'',taxRate:st.x||0,
       lines:(st.l||[]).map(a=>({sku:a[0],qty:a[1],unitPrice:a[2],lineTotal:Math.round(a[1]*a[2]*100)/100,name:a[3]||a[0],variant:a[4]||''})),
       subtotal:st.s||0,discount:st.d||0,discountLabel:st.dl||'',tax:st.t||0,user:st.u||APP.settings.username||'User',createdAt:new Date().toISOString()};
-    sale.total=Math.round((sale.subtotal-sale.discount)*100)/100;
+    sale.taxOnTop=!!st.o;
+    sale.total=st.g!==undefined?st.g:Math.round((sale.subtotal-sale.discount+(st.o?sale.tax:0))*100)/100;
   }
   showView('pos');
   if(r.ok&&sale){
