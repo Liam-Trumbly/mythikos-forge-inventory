@@ -297,6 +297,25 @@
   .pos-pending-actions .discard{color:var(--danger);border-color:var(--danger)}
   .pos-sale-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
   .pos-sale-row:last-child{border-bottom:none}
+  .pos-sale-row{cursor:pointer}
+  .pos-sale-row.voided{opacity:0.45}.pos-sale-row.voided .pos-sale-amt{text-decoration:line-through}
+  .pos-sale-method.m-void{background:var(--danger-bg);color:var(--danger)}
+  .pos-pack-head,.pos-pack-row{display:grid;grid-template-columns:minmax(0,1fr) 40px 36px 36px 34px 60px;gap:6px;align-items:center}
+  .pos-pack-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);padding:4px 0;border-bottom:1px solid var(--border-strong)}
+  .pos-pack-head span:not(:first-child),.pos-pack-row span:not(:first-child){text-align:center}
+  .pos-pack-row{padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .pos-pack-row .warn{color:var(--danger);font-weight:700}
+  .pos-pack-row input[type=number]{width:60px;padding:6px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-size:16px;font-weight:600;text-align:center;font-family:var(--font-body);background:#fff;color:var(--text);-webkit-text-fill-color:var(--text);color-scheme:light}
+  .pos-pack-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--purple);margin:0 auto;display:block}
+  .pos-tot-row.manual{color:var(--purple);font-weight:600}
+  .pos-disc-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .pos-disc-toggle button{padding:11px;border-radius:var(--radius-sm);border:2px solid var(--purple);background:none;color:var(--purple);font-weight:700;font-size:14px;font-family:var(--font-body);cursor:pointer}
+  .pos-disc-toggle button.on{background:var(--purple);color:#fff}
+  .pos-detail-line{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:5px 0;border-bottom:1px solid var(--border)}
+  .pos-detail-line:last-child{border-bottom:none}
+  .pos-detail-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .pos-void-btn{width:100%;padding:13px;border-radius:var(--radius);border:2px solid var(--danger);background:none;color:var(--danger);font-weight:700;font-size:14px;font-family:var(--font-body);cursor:pointer}
+  .pos-alt-btn{width:100%;padding:13px;border-radius:var(--radius);border:1px solid var(--border-strong);background:#fff;color:var(--text);-webkit-text-fill-color:var(--text);font-weight:600;font-size:14px;font-family:var(--font-body);cursor:pointer}
   .pos-sale-no{font-weight:700;width:78px;flex-shrink:0}
   .pos-sale-items{flex:1;min-width:0;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .pos-sale-method{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 6px;border-radius:10px;flex-shrink:0}
@@ -376,22 +395,22 @@
       <div style="font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--success)">▲ Restock / Add Stock</div>
       <p style="font-size:12px;color:var(--text-muted);margin-top:4px">Scan a product to add stock you've made or received. Sales are pulled in automatically from your platforms — you never enter them here.</p>
     </div>
-    <div class="scanner-container">
-      <video id="scanner-video" playsinline autoplay muted></video>
-      <div class="scanner-overlay"><div class="scanner-frame"><div class="scanner-line"></div></div></div>
-    </div>
-    <p class="scanner-hint">Point camera at a product QR code</p>
-    <button id="scan-btn" class="restock-btn" onclick="startScan()">Start Scanner</button>
-    <div style="margin-top:16px">
-      <div class="card">
-        <div class="card-title">Manual Entry</div>
-        <div class="settings-field">
-          <label>Search product</label>
-          <input type="text" id="manual-search" placeholder="Product name or SKU…" oninput="filterManualProducts(this.value)">
-        </div>
-        <div id="manual-product-list"></div>
+    <div class="card">
+      <div class="card-title">Search Product</div>
+      <div class="settings-field">
+        <input type="text" id="manual-search" placeholder="Product name or SKU…" oninput="filterManualProducts(this.value)" autocomplete="off" autocapitalize="off" spellcheck="false">
       </div>
+      <div id="manual-product-list"></div>
     </div>
+    <!-- Camera stays hidden until asked for; it closes again after each scan. -->
+    <div id="scan-cam-wrap" style="display:none">
+      <div class="scanner-container">
+        <video id="scanner-video" playsinline autoplay muted></video>
+        <div class="scanner-overlay"><div class="scanner-frame"><div class="scanner-line"></div></div></div>
+      </div>
+      <p class="scanner-hint">Point camera at a product QR code</p>
+    </div>
+    <button id="scan-btn" class="restock-btn" onclick="startScan()">Scan QR with Camera</button>
   </div>
 
   <!-- SYNC -->
@@ -485,6 +504,7 @@
           <div class="pos-event-name" id="pos-event-name">—</div>
           <div class="pos-event-meta" id="pos-event-meta">—</div>
         </div>
+        <button id="pos-stock-btn" style="display:none" onclick="posOpenPack()">Stock</button>
         <button onclick="posOpenEventModal(true)">Edit</button>
         <button onclick="posOpenEndEvent()">End</button>
       </div>
@@ -509,7 +529,10 @@
         <div class="card">
           <div class="section-header">
             <div class="card-title" style="margin:0">Cart <span id="pos-sale-no" style="color:var(--text-muted);font-weight:400"></span></div>
-            <button class="section-action" onclick="posClearCart()">Clear</button>
+            <div style="display:flex;gap:14px">
+              <button class="section-action" onclick="posOpenDiscount()">Discount</button>
+              <button class="section-action" onclick="posClearCart()">Clear</button>
+            </div>
           </div>
           <div id="pos-cart"></div>
           <div class="pos-totals" id="pos-totals"></div>
@@ -701,6 +724,11 @@
       </div>
       <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Leave % at 0 to turn the deal off for this event.</p>
     </div>
+    <div class="settings-label" style="margin-top:6px">Event Inventory</div>
+    <div class="card" style="padding-bottom:4px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);margin-bottom:6px"><input type="checkbox" id="pos-ev-track" style="width:18px;height:18px;accent-color:var(--purple)"> Track what I bring to this event</label>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.45">You set how many of each item you packed. Sales count down the booth stock <b>and</b> your total stock; the website always shows the full total.</p>
+    </div>
     <button class="save-btn" onclick="posSaveEvent()">Save</button>
     <button class="modal-cancel-btn" onclick="posCloseModal(null,'pos-event-modal')">Cancel</button>
   </div>
@@ -717,6 +745,53 @@
     <div class="modal-stock-row" style="margin-bottom:16px"><span class="modal-stock-label">Change</span><span class="modal-stock-val" id="pos-cash-change">—</span></div>
     <button class="modal-confirm-btn restock" onclick="posConfirmCash()">Complete Cash Sale</button>
     <button class="modal-cancel-btn" onclick="posCloseModal(null,'pos-cash-modal')">Cancel</button>
+  </div>
+</div>
+
+<!-- POS: Event stock (pack list) modal -->
+<div class="modal-overlay" id="pos-pack-modal" onclick="posCloseModal(event,'pos-pack-modal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:4px;color:var(--purple)">Event Stock</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.45">Set how many of each item you brought. Leave blank for items you didn't bring.</p>
+    <div class="search-bar" style="margin-bottom:8px"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="pos-pack-search" placeholder="Filter products…" oninput="posRenderPack()" autocomplete="off"></div>
+    <div style="display:flex;gap:14px;margin-bottom:6px">
+      <button class="section-action" onclick="posPackBringAll()">Bring all in stock</button>
+      <button class="section-action" onclick="posPackClear()">Clear all</button>
+      <label style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)"><input type="checkbox" id="pos-pack-only" onchange="posRenderPack()"> Packed only</label>
+    </div>
+    <div class="pos-pack-head"><span>Item</span><span>Total</span><span>Sold</span><span>Left</span><span>All</span><span>Brought</span></div>
+    <div style="max-height:46vh;overflow-y:auto;margin-bottom:12px" id="pos-pack-list"></div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px" id="pos-pack-sum"></div>
+    <button class="save-btn" onclick="posSavePack()">Save Event Stock</button>
+    <button class="modal-cancel-btn" onclick="posCloseModal(null,'pos-pack-modal')">Cancel</button>
+  </div>
+</div>
+
+<!-- POS: One time discount modal -->
+<div class="modal-overlay" id="pos-disc-modal" onclick="posCloseModal(event,'pos-disc-modal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:12px;color:var(--purple)">Discount This Sale</div>
+    <div class="pos-disc-toggle">
+      <button id="pos-disc-pct" onclick="posSetDiscKind('pct')">% off</button>
+      <button id="pos-disc-amt" onclick="posSetDiscKind('amt')">$ off</button>
+    </div>
+    <div class="settings-field"><label id="pos-disc-val-label">Percent off</label><input type="number" id="pos-disc-val" step="0.01" min="0" inputmode="decimal" oninput="posDiscPreview()"></div>
+    <div class="settings-field"><label>Reason (optional)</label><input type="text" id="pos-disc-note" placeholder="Bundle, repeat customer, damaged…" maxlength="40"></div>
+    <div class="modal-stock-row" style="margin-bottom:16px"><span class="modal-stock-label">Discount</span><span class="modal-stock-val" id="pos-disc-preview">—</span></div>
+    <p style="font-size:11px;color:var(--text-muted);margin:-8px 0 12px">Applies after the event deal and before tax. Only this cart.</p>
+    <button class="modal-confirm-btn purple" onclick="posApplyDiscount()">Apply Discount</button>
+    <button class="modal-cancel-btn" id="pos-disc-remove" onclick="posRemoveDiscount()">Remove Discount</button>
+    <button class="modal-cancel-btn" onclick="posCloseModal(null,'pos-disc-modal')">Cancel</button>
+  </div>
+</div>
+
+<!-- POS: Sale detail / edit modal -->
+<div class="modal-overlay" id="pos-sale-modal" onclick="posCloseModal(event,'pos-sale-modal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="pos-sale-detail"></div>
   </div>
 </div>
 
@@ -738,6 +813,7 @@
     <div class="modal-handle"></div>
     <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:12px;color:var(--purple)">End Event</div>
     <div class="pos-summary-grid" id="pos-end-summary"></div>
+    <div id="pos-end-stock"></div>
     <div id="pos-end-warn"></div>
     <button class="save-btn secondary" onclick="posExportCsv()">Export Sales CSV</button>
     <button class="save-btn danger-btn" onclick="posEndEvent()">End Event</button>
@@ -779,13 +855,31 @@ function init() {
   // Outbox retry triggers: on reconnect, on tab refocus, and every 30s.
   window.addEventListener('online', ()=>{updateQueueBadge();flushOutbox();});
   window.addEventListener('offline', updateQueueBadge);
-  document.addEventListener('visibilitychange', ()=>{if(!document.hidden) flushOutbox();});
+  document.addEventListener('visibilitychange', ()=>{if(!document.hidden){resyncFromStorage();flushOutbox();}});
+  // Square's return lands in a new Safari tab. Every tab shares this device's
+  // storage, so when another tab records a sale (or you switch back to an
+  // older tab), reload from storage so this tab is current and can't save
+  // stale stock counts over the newer ones.
+  window.addEventListener('storage', e=>{if(!e.key||/^mf_/.test(e.key)) resyncFromStorage();});
+  window.addEventListener('pageshow', e=>{if(e.persisted) resyncFromStorage();});
   setInterval(flushOutbox, 30000);
   flushOutbox(); // attempt on startup
   refreshPlatformStatus(); // auto-green the platform dots from Worker secrets
   // Checkout: handle a Square POS return first, then settle any pending carts.
   posHandleSquareCallback();
   posCheckPendingWithWorker();
+}
+
+let _resyncTimer=null;
+function resyncFromStorage(){
+  clearTimeout(_resyncTimer);
+  _resyncTimer=setTimeout(()=>{
+    try{
+      loadLocalData();
+      renderDashboard(); renderProductList(); renderSyncLog(); updateQueueBadge();
+      if(APP.currentView==='pos') posRender();
+    }catch(err){console.warn('resync failed',err);}
+  },50);
 }
 
 function loadSettings() {
@@ -1263,12 +1357,13 @@ function setScanMode(mode) {
   // App is inventory-only; scanning is always a restock/add action.
   APP.scanMode='restock';
   const btn=document.getElementById('scan-btn');
-  if(btn){btn.className='restock-btn';btn.textContent=APP.scanning?'Stop Scanner':'Start Scanner';}
+  if(btn){btn.className='restock-btn';btn.textContent=APP.scanning?'Close Camera':'Scan QR with Camera';}
 }
 
 function startScan() {
   if(APP.scanning){stopScan();return;}
-  document.getElementById('scan-btn').textContent='Stop Scanner';
+  document.getElementById('scan-btn').textContent='Close Camera';
+  document.getElementById('scan-cam-wrap').style.display='block';
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
     .then(stream=>{
       APP.scanStream=stream; APP.scanning=true;
@@ -1276,7 +1371,7 @@ function startScan() {
       video.srcObject=stream; video.play();
       video.onloadedmetadata=()=>scanFrame();
     })
-    .catch(()=>{showToast('Camera access denied','error');document.getElementById('scan-btn').textContent='Start Scanner';});
+    .catch(()=>{showToast('Camera access denied','error');stopScan();});
 }
 
 function stopScan() {
@@ -1284,7 +1379,8 @@ function stopScan() {
   if(APP.scanStream){APP.scanStream.getTracks().forEach(t=>t.stop());APP.scanStream=null;}
   if(APP.scanAnimFrame) cancelAnimationFrame(APP.scanAnimFrame);
   document.getElementById('scanner-video').srcObject=null;
-  document.getElementById('scan-btn').textContent='Start Scanner';
+  document.getElementById('scan-cam-wrap').style.display='none';
+  document.getElementById('scan-btn').textContent='Scan QR with Camera';
 }
 
 function scanFrame() {
@@ -1826,7 +1922,10 @@ function posAddSku(sku,qty=1){
   if(line) line.qty+=qty; else c.lines.push({sku,qty});
   posSetCart(c);
   const inCart=(line?line.qty:qty);
+  const bst=posTracking(ev)?posEventStock(ev)[sku]:undefined;
   if(priceOf(p)===null) showToast(`${p.name}: no price set — add one in Products → Edit`,'error');
+  else if(posTracking(ev)&&!bst) showToast(`+1 ${p.name} (not on this event's stock list)`,'warn');
+  else if(bst&&inCart>bst.left) showToast(`+1 ${p.name} (only ${Math.max(0,bst.left)} left at the booth on record)`,'warn');
   else if(inCart>(p.homeQty||0)) showToast(`+1 ${p.name} (only ${p.homeQty||0} in stock on record)`,'warn');
   else showToast(`+1 ${p.name}${p.variant?' — '+p.variant:''}`,'success');
   posRenderCart();
@@ -1845,7 +1944,7 @@ function posRemoveLine(sku){
 function posClearCart(){
   const c=posGetCart(); if(c.lines.length===0) return;
   if(!confirm('Clear the cart?')) return;
-  c.lines=[]; posSetCart(c); posRenderCart(); posFocusSearch();
+  c.lines=[]; c.manualDisc=null; posSetCart(c); posRenderCart(); posFocusSearch();
 }
 
 // Totals: subtotal → deal → total (tax included) → tax portion.
@@ -1868,7 +1967,16 @@ function posCompute(cart,ev,method='card'){
   const dealQty=kw?lines.filter(l=>posNorm(l.name+' '+l.variant).includes(kw)).reduce((s,l)=>s+l.qty,0):0;
   const pct=Number(deal.pct)||0, minQty=Number(deal.minQty)||0;
   const dealOn=pct>0&&kw&&dealQty>=minQty;
-  const discount=dealOn?Math.round(subtotal*pct/100):0;
+  const dealDiscount=dealOn?Math.round(subtotal*pct/100):0;
+  // One time discount on this cart only (cart.manualDisc), applied after the deal.
+  const md=cart.manualDisc;
+  const base=subtotal-dealDiscount;
+  let manualDiscount=0, manualLabel='';
+  if(md&&Number(md.value)>0){
+    manualDiscount=md.kind==='pct'?Math.round(base*Math.min(100,Number(md.value))/100):Math.min(base,toCents(md.value));
+    manualLabel=(md.kind==='pct'?`${Number(md.value)}% off`:`${fmt(toCents(md.value))} off`)+(md.note?` (${md.note})`:'');
+  }
+  const discount=dealDiscount+manualDiscount;
   const afterDeal=subtotal-discount;
   const rate=Number(ev&&ev.taxRate)||0;
   const onTop=posTaxOnTop(ev,method);
@@ -1877,7 +1985,8 @@ function posCompute(cart,ev,method='card'){
   const total=onTop?afterDeal+tax:afterDeal;
   const dealLabel=dealOn?`${minQty}+ ${deal.keyword} ${pct}% off`:'';
   const dealHint=(pct>0&&kw&&dealQty>0&&!dealOn)?`Add ${minQty-dealQty} more ${deal.keyword} for ${pct}% off the order`:'';
-  return {lines,missingPrice,subtotal,discount,dealLabel,dealHint,afterDeal,total,tax,rate,onTop,method};
+  const discountLabel=[dealLabel,manualLabel].filter(Boolean).join(' + ');
+  return {lines,missingPrice,subtotal,discount,dealDiscount,manualDiscount,manualLabel,dealLabel,discountLabel,dealHint,afterDeal,total,tax,rate,onTop,method};
 }
 
 // Note on the Square payment: sale number first so any Square transaction
@@ -1886,7 +1995,7 @@ function posCompute(cart,ev,method='card'){
 function posBuildNote(saleNo,t){
   const items=t.lines.map(l=>`${(l.variant?l.name+' '+l.variant:l.name).replace(/\|/g,'/')} x${l.qty}`);
   const tail=[
-    t.discount?`${t.dealLabel} (-${fmt(t.discount)})`:'',
+    t.discount?`${t.discountLabel.replace(/\|/g,'/')} (-${fmt(t.discount)})`:'',
     t.tax?`${t.onTop?'Tax':'Tax incl'} ${fmt(t.tax)}`:'',
     `Total ${fmt(t.total)}`,
   ].filter(Boolean).join(' | ');
@@ -1908,7 +2017,8 @@ function posSnapshotSale(cart,ev,t,method,id){
     cartId:id, cartRef:cart.ref, saleNo:cart.saleNo, method,
     event:ev?ev.name:'', eventId:ev?ev.id:'', taxRate:t.rate, taxOnTop:t.onTop,
     lines:t.lines.map(l=>({sku:l.sku,name:l.name,variant:l.variant,qty:l.qty,unitPrice:l.unitCents/100,lineTotal:l.lineCents/100})),
-    subtotal:t.subtotal/100, discount:t.discount/100, discountLabel:t.dealLabel,
+    subtotal:t.subtotal/100, discount:t.discount/100, discountLabel:t.discountLabel,
+    manualDisc:cart.manualDisc||null,
     tax:t.tax/100, total:t.total/100,
     note:posBuildNote(cart.saleNo,t),
     user:APP.settings.username||'User', createdAt:new Date().toISOString(),
@@ -1927,6 +2037,12 @@ function posRender(){
   const d=ev.deal||{};
   document.getElementById('pos-event-meta').textContent=
     `Tax ${ev.taxRate||0}% · ${posTaxOnTop(ev,'card')?'added on card':'incl. on card'}, ${posTaxOnTop(ev,'cash')?'added on cash':'incl. on cash'}`+((Number(d.pct)>0&&d.keyword)?` · Deal: ${d.minQty}+ ${d.keyword} = ${d.pct}% off`:' · No deal');
+  const tracking=posTracking(ev);
+  document.getElementById('pos-stock-btn').style.display=tracking?'inline-block':'none';
+  if(tracking){
+    const st=posEventStock(ev); const left=Object.values(st).reduce((a,x)=>a+Math.max(0,x.left),0);
+    document.getElementById('pos-event-meta').textContent+=` · Booth stock: ${left} left`;
+  }
   posRenderPending(); posRenderCart(); posRenderSales();
 }
 
@@ -1935,11 +2051,14 @@ function posRenderResults(val){
   const v=(val||'').trim().toLowerCase();
   if(!v){box.innerHTML='';return;}
   const hits=APP.products.filter(p=>p.name.toLowerCase().includes(v)||(p.variant||'').toLowerCase().includes(v)||p.sku.toLowerCase().includes(v)||(p.qrId||'').toLowerCase()===v).slice(0,8);
+  const ev=posGetEvent(); const boothStock=posTracking(ev)?posEventStock(ev):null;
   box.innerHTML=hits.length===0
     ? '<div style="font-size:13px;color:var(--text-muted);padding:6px 2px">No matches</div>'
     : hits.map(p=>{
         const pr=priceOf(p);
-        return `<div class="pos-result" onclick="posPick('${escapeHtml(p.sku)}')"><div class="pos-result-info"><div class="pos-result-name">${escapeHtml(p.name)}</div><div class="pos-result-sub">${escapeHtml(p.variant||p.sku)} · ${p.homeQty||0} in stock</div></div><div class="pos-result-price">${pr===null?'<span style="color:var(--danger);font-size:12px">No price</span>':fmt(toCents(pr))}</div></div>`;
+        const bs=boothStock&&boothStock[p.sku];
+        const stockTxt=boothStock?(bs?`${bs.left} at booth`:'not packed'):`${p.homeQty||0} in stock`;
+        return `<div class="pos-result" onclick="posPick('${escapeHtml(p.sku)}')"><div class="pos-result-info"><div class="pos-result-name">${escapeHtml(p.name)}</div><div class="pos-result-sub">${escapeHtml(p.variant||p.sku)} · ${stockTxt}</div></div><div class="pos-result-price">${pr===null?'<span style="color:var(--danger);font-size:12px">No price</span>':fmt(toCents(pr))}</div></div>`;
       }).join('');
 }
 function posPick(sku){
@@ -1952,6 +2071,8 @@ function posRenderCart(){
   const ev=posGetEvent(); const cart=posGetCart();
   const t=posCompute(cart,ev,'card');
   const tc=posCompute(cart,ev,'cash');
+  const booth=posTracking(ev)?posEventStock(ev):null;
+  if(booth) t.lines.forEach(l=>{const b=booth[l.sku];l.stock=b?Math.max(0,b.left):0;});
   document.getElementById('pos-sale-no').textContent=cart.lines.length?'· '+cart.saleNo:'';
   const list=document.getElementById('pos-cart');
   list.innerHTML=t.lines.length===0
@@ -1960,7 +2081,7 @@ function posRenderCart(){
         const over=l.qty>(l.stock||0);
         const sub=l.unitCents===null
           ? '<span class="pos-line-sub warn">No price — set it in Products → Edit</span>'
-          : `<span class="pos-line-sub${over?' warn':''}">${escapeHtml(l.variant||l.sku)} · ${fmt(l.unitCents)}${over?` · only ${l.stock||0} on record`:''}</span>`;
+          : `<span class="pos-line-sub${over?' warn':''}">${escapeHtml(l.variant||l.sku)} · ${fmt(l.unitCents)}${over?` · only ${l.stock||0} ${booth?'at booth':'on record'}`:''}</span>`;
         return `<div class="pos-line"><div class="pos-line-info"><div class="pos-line-name">${escapeHtml(l.name)}</div>${sub}</div>
           <div class="pos-stepper"><button onclick="posChangeQty('${escapeHtml(l.sku)}',-1)">−</button><span>${l.qty}</span><button onclick="posChangeQty('${escapeHtml(l.sku)}',1)">+</button></div>
           <div class="pos-line-total">${l.unitCents===null?'—':fmt(l.lineCents)}</div>
@@ -1969,7 +2090,8 @@ function posRenderCart(){
   let rows='';
   if(t.lines.length){
     rows+=`<div class="pos-tot-row"><span>Subtotal</span><span>${fmt(t.subtotal)}</span></div>`;
-    if(t.discount) rows+=`<div class="pos-tot-row deal"><span>${escapeHtml(t.dealLabel)}</span><span>−${fmt(t.discount)}</span></div>`;
+    if(t.dealDiscount) rows+=`<div class="pos-tot-row deal"><span>${escapeHtml(t.dealLabel)}</span><span>−${fmt(t.dealDiscount)}</span></div>`;
+    if(t.manualDiscount) rows+=`<div class="pos-tot-row manual" onclick="posOpenDiscount()" style="cursor:pointer"><span>${escapeHtml(t.manualLabel)}</span><span>−${fmt(t.manualDiscount)}</span></div>`;
     if(t.dealHint) rows+=`<div class="pos-tot-row hint"><span>${escapeHtml(t.dealHint)}</span></div>`;
     if(t.total===tc.total){
       if(t.rate&&t.onTop) rows+=`<div class="pos-tot-row"><span>Tax (${t.rate}%)</span><span>+${fmt(t.tax)}</span></div>`;
@@ -2009,15 +2131,17 @@ function posRenderPending(){
 function posRenderSales(){
   const ev=posGetEvent();
   const sales=posGetSales().filter(s=>!ev||s.eventId===ev.id);
-  const total=sales.reduce((s,x)=>s+toCents(x.total),0);
-  document.getElementById('pos-sales-count').textContent=sales.length?`${sales.length} · ${fmt(total)}`:'';
+  const live=sales.filter(s=>!s.voided);
+  const total=live.reduce((s,x)=>s+toCents(x.total),0);
+  document.getElementById('pos-sales-count').textContent=live.length?`${live.length} · ${fmt(total)}`:'';
   document.getElementById('pos-sales-list').innerHTML=sales.length===0
     ? '<div class="empty-state" style="padding:16px"><p>No sales yet</p></div>'
-    : [...sales].reverse().slice(0,30).map(s=>`<div class="pos-sale-row">
+    : [...sales].reverse().slice(0,30).map(s=>`<div class="pos-sale-row${s.voided?' voided':''}" onclick="posOpenSale('${escapeHtml(s.cartId)}')">
         <div class="pos-sale-no">${escapeHtml(s.saleNo)}</div>
         <div class="pos-sale-items">${new Date(s.paidAt||s.createdAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${escapeHtml(s.lines.map(l=>`${l.name}${l.variant?' '+l.variant:''} x${l.qty}`).join(', '))}</div>
-        <span class="pos-sale-method ${s.method==='cash'?'m-cash':'m-card'}">${s.method==='cash'?'Cash':'Card'}</span>
-        <div class="pos-sale-amt">${fmt(toCents(s.total))}</div></div>`).join('');
+        <span class="pos-sale-method ${s.voided?'m-void':s.method==='cash'?'m-cash':'m-card'}">${s.voided?'Void':s.method==='cash'?'Cash':'Card'}</span>
+        <div class="pos-sale-amt">${fmt(toCents(s.total))}</div></div>`).join('')
+      +(sales.length?'<div style="font-size:11px;color:var(--text-muted);padding-top:8px">Tap a sale to view, void, or fix its payment type.</div>':'');
 }
 
 // ── event setup ──
@@ -2037,6 +2161,7 @@ function posOpenEventModal(editing){
   document.getElementById('pos-ev-deal-kw').value=(src.deal&&src.deal.keyword)||'';
   document.getElementById('pos-ev-deal-min').value=(src.deal&&src.deal.minQty)||'';
   document.getElementById('pos-ev-deal-pct').value=(src.deal&&src.deal.pct)??'';
+  document.getElementById('pos-ev-track').checked=editing&&ev?!!ev.trackStock:!!last.trackStock;
   document.getElementById('pos-event-modal').dataset.editing=editing?'1':'';
   document.getElementById('pos-event-modal').classList.add('open');
 }
@@ -2053,20 +2178,25 @@ function posSaveEvent(){
   const taxOnTop={card:document.getElementById('pos-ev-ontop-card').checked,cash:document.getElementById('pos-ev-ontop-cash').checked};
   const editing=document.getElementById('pos-event-modal').dataset.editing==='1';
   const cur=posGetEvent();
-  const ev=editing&&cur?{...cur,name,taxRate:tax,taxOnTop,deal}:{id:genId(),name,taxRate:tax,taxOnTop,deal,startedAt:new Date().toISOString()};
+  const trackStock=document.getElementById('pos-ev-track').checked;
+  const ev=editing&&cur?{...cur,name,taxRate:tax,taxOnTop,deal,trackStock}:{id:genId(),name,taxRate:tax,taxOnTop,deal,trackStock,stock:{},startedAt:new Date().toISOString()};
+  if(!ev.stock) ev.stock={};
   posSave('mf_pos_event',ev);
-  posSave('mf_pos_last_event',{taxRate:tax,taxOnTop,deal});
+  posSave('mf_pos_last_event',{taxRate:tax,taxOnTop,deal,trackStock});
   posCloseModal(null,'pos-event-modal');
   showToast(editing?'Event updated':`${name} started`,'success');
   posRender(); posFocusSearch();
+  // Turning tracking on with nothing packed yet: go straight to the pack list.
+  if(trackStock&&Object.keys(ev.stock).length===0) setTimeout(posOpenPack,250);
 }
 function posEventStats(){
   const ev=posGetEvent();
-  const sales=posGetSales().filter(s=>ev&&s.eventId===ev.id);
+  const all=posGetSales().filter(s=>ev&&s.eventId===ev.id);
+  const sales=all.filter(s=>!s.voided);
   const sum=k=>sales.reduce((s,x)=>s+toCents(x[k]),0);
   const card=sales.filter(s=>s.method!=='cash').reduce((s,x)=>s+toCents(x.total),0);
   const units=sales.reduce((s,x)=>s+x.lines.reduce((a,l)=>a+l.qty,0),0);
-  return {sales,count:sales.length,gross:sum('total'),discount:sum('discount'),tax:sum('tax'),card,cash:sum('total')-card,units};
+  return {sales,all,voidedCount:all.length-sales.length,count:sales.length,gross:sum('total'),discount:sum('discount'),tax:sum('tax'),card,cash:sum('total')-card,units};
 }
 function posOpenEndEvent(){
   const st=posEventStats();
@@ -2074,7 +2204,17 @@ function posOpenEndEvent(){
     <div><b>${st.count}</b><span>Sales</span></div><div><b>${st.units}</b><span>Units</span></div>
     <div><b>${fmt(st.gross)}</b><span>Total taken</span></div><div><b>${fmt(st.tax)}</b><span>Sales tax</span></div>
     <div><b>${fmt(st.card)}</b><span>Card</span></div><div><b>${fmt(st.cash)}</b><span>Cash</span></div>
-    <div><b>${fmt(st.discount)}</b><span>Deal discounts</span></div><div><b>${loadOutbox().length}</b><span>Waiting to sync</span></div>`;
+    <div><b>${fmt(st.discount)}</b><span>Discounts</span></div><div><b>${loadOutbox().length}</b><span>Waiting to sync</span></div>`
+    +(st.voidedCount?`<div><b>${st.voidedCount}</b><span>Voided (not counted)</span></div>`:'');
+  const ev=posGetEvent();
+  let stockHtml='';
+  if(posTracking(ev)){
+    const es=Object.values(posEventStock(ev));
+    const brought=es.reduce((a,x)=>a+x.brought,0), sold=es.reduce((a,x)=>a+x.sold,0), home=es.reduce((a,x)=>a+Math.max(0,x.left),0);
+    stockHtml=`<div class="settings-label" style="margin-top:0">Event Stock</div><div class="pos-summary-grid" style="grid-template-columns:1fr 1fr 1fr"><div><b>${brought}</b><span>Brought</span></div><div><b>${sold}</b><span>Sold</span></div><div><b>${home}</b><span>Going home</span></div></div>`
+      +(es.some(x=>x.left<0)?`<div class="pos-warn">Some items sold more than you listed as brought. Check counts in Products when you're home.</div>`:'');
+  }
+  document.getElementById('pos-end-stock').innerHTML=stockHtml;
   const pend=posGetPending().length;
   document.getElementById('pos-end-warn').innerHTML=pend
     ? `<div class="pos-warn">${pend} unfinished card payment${pend>1?'s':''} still need a Paid or Discard decision.</div>`:'';
@@ -2089,9 +2229,9 @@ function posEndEvent(){
 }
 function posExportCsv(){
   const st=posEventStats(); const ev=posGetEvent();
-  const rows=[['saleNo','paidAt','method','sku','name','variant','qty','unitPrice','lineTotal','saleSubtotal','saleDiscount','saleTaxIncluded','saleTotal','squareTxId']];
-  st.sales.forEach(s=>s.lines.forEach((l,i)=>rows.push([s.saleNo,s.paidAt||s.createdAt,s.method,l.sku,l.name,l.variant,l.qty,l.unitPrice,l.lineTotal,
-    i===0?s.subtotal:'',i===0?s.discount:'',i===0?s.tax:'',i===0?s.total:'',i===0?(s.squareTxId||''):''])));
+  const rows=[['saleNo','status','paidAt','method','sku','name','variant','qty','unitPrice','lineTotal','saleSubtotal','saleDiscount','discountLabel','saleTax','saleTotal','squareTxId']];
+  st.all.forEach(s=>s.lines.forEach((l,i)=>rows.push([s.saleNo,s.voided?'VOID':'paid',s.paidAt||s.createdAt,s.method,l.sku,l.name,l.variant,l.qty,l.unitPrice,l.lineTotal,
+    i===0?s.subtotal:'',i===0?s.discount:'',i===0?(s.discountLabel||''):'',i===0?s.tax:'',i===0?s.total:'',i===0?(s.squareTxId||''):''])));
   const csv=rows.map(r=>r.map(v=>{const x=String(v??'');return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;}).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const fname=`Mythikos_Sales_${(ev?ev.name:'event').replace(/[^a-z0-9]+/gi,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
@@ -2106,7 +2246,17 @@ function posExportCsv(){
 function posCommitSale(sale,extra){
   const s={...sale,...extra,paidAt:new Date().toISOString()};
   const sales=posGetSales();
-  if(sales.some(x=>x.cartId===s.cartId)){posSetPending(posGetPending().filter(p=>p.cartId!==s.cartId));return s;} // already recorded here
+  // A cart can only be paid once. Clearing pending by cartRef (not just cartId)
+  // stops an abandoned card attempt from lingering after the same cart is paid
+  // another way (e.g. card opened, backed out, then cash), which could later be
+  // tapped "Paid" and record the sale twice.
+  const dropPending=()=>posSetPending(posGetPending().filter(p=>p.cartId!==s.cartId&&p.cartRef!==s.cartRef));
+  const existing=sales.find(x=>x.cartId===s.cartId||(s.cartRef&&x.cartRef===s.cartRef&&!x.voided));
+  if(existing){ // already recorded here
+    dropPending();
+    if(existing.cartId!==s.cartId) showToast(`${existing.saleNo} was already recorded as ${existing.method==='cash'?'cash':'card'}. Check Square in case it was charged twice.`,'error');
+    return existing;
+  }
   // Local stock + activity feed, so this device's counts update immediately.
   s.lines.forEach(l=>{
     const p=APP.products.find(x=>x.sku===l.sku);
@@ -2116,7 +2266,7 @@ function posCommitSale(sale,extra){
   });
   saveLocalData();
   sales.push(s); posSave('mf_pos_sales',sales.slice(-1000));
-  posSetPending(posGetPending().filter(p=>p.cartId!==s.cartId));
+  dropPending();
   // Durable + idempotent on cartId: Worker decrements, logs, pushes to Squarespace.
   apiCall('POST','/pos-sale',{sale:{
     cartId:s.cartId,saleNo:s.saleNo,method:s.method,squareTxId:s.squareTxId||'',event:s.event,
@@ -2156,14 +2306,16 @@ function posUpdateChange(){
   document.getElementById('pos-cash-change').textContent=recv?(recv>=t.total?fmt(recv-t.total):'Short '+fmt(t.total-recv)):'—';
 }
 function posConfirmCash(){
+  // Ignore a second tap after the sale already went through.
+  if(!document.getElementById('pos-cash-modal').classList.contains('open')) return;
   const ev=posGetEvent(), cart=posGetCart(), t=posCompute(cart,ev,'cash');
   if(!t.lines.length||t.missingPrice) return;
   const recvRaw=document.getElementById('pos-cash-recv').value;
   const recv=recvRaw===''?t.total:toCents(recvRaw);
   if(recv<t.total){showToast('Cash received is less than the total','error');return;}
+  posCloseModal(null,'pos-cash-modal');
   const sale=posSnapshotSale(cart,ev,t,'cash',genId());
   const s=posCommitSale(sale,{cashReceived:recv/100,change:(recv-t.total)/100});
-  posCloseModal(null,'pos-cash-modal');
   posRender(); posShowPaid(s,recv-t.total);
 }
 
@@ -2287,13 +2439,221 @@ function posResolvePending(cartId,action){
   }else if(action==='cart'){
     const cur=posGetCart();
     if(cur.lines.length&&cur.ref!==s.cartRef&&!confirm('Replace the current cart with this one?')) return;
-    posSave('mf_pos_cart',{ref:s.cartRef,saleNo:s.saleNo,lines:s.lines.map(l=>({sku:l.sku,qty:l.qty}))});
+    posSave('mf_pos_cart',{ref:s.cartRef,saleNo:s.saleNo,lines:s.lines.map(l=>({sku:l.sku,qty:l.qty})),manualDisc:s.manualDisc||null});
     posSetPending(posGetPending().filter(p=>p.cartId!==cartId));
   }else{
     if(!confirm(`Discard ${s.saleNo}? Nothing is recorded and stock isn't changed.`)) return;
     posSetPending(posGetPending().filter(p=>p.cartId!==cartId));
   }
   posRender();
+}
+
+// ── event stock (what was packed for this event) ──
+// ev.stock = {sku:{brought:n}}. Sold is worked out from this event's non
+// voided sales, so voids and edits keep the booth counts right automatically.
+// Sales still come off the product's total stock (homeQty), which is what the
+// Worker pushes to the website.
+function posTracking(ev){return !!(ev&&ev.trackStock);}
+function posEventStock(ev){
+  const out={};
+  if(!ev) return out;
+  Object.entries(ev.stock||{}).forEach(([sku,v])=>{const n=Number(v&&v.brought)||0;if(n>0) out[sku]={brought:n,sold:0,left:n};});
+  posGetSales().filter(s=>s.eventId===ev.id&&!s.voided).forEach(s=>s.lines.forEach(l=>{
+    if(out[l.sku]){out[l.sku].sold+=l.qty;out[l.sku].left-=l.qty;}
+  }));
+  return out;
+}
+function posOpenPack(){
+  const ev=posGetEvent(); if(!ev) return;
+  POS.packDraft={};
+  Object.entries(ev.stock||{}).forEach(([sku,v])=>{if(Number(v.brought)>0) POS.packDraft[sku]=Number(v.brought);});
+  document.getElementById('pos-pack-search').value='';
+  document.getElementById('pos-pack-only').checked=Object.keys(POS.packDraft).length>0;
+  posRenderPack();
+  document.getElementById('pos-pack-modal').classList.add('open');
+}
+function posRenderPack(){
+  const ev=posGetEvent(); const st=posEventStock(ev);
+  const q=(document.getElementById('pos-pack-search').value||'').trim().toLowerCase();
+  const only=document.getElementById('pos-pack-only').checked;
+  const list=APP.products.filter(p=>p.active!==false)
+    .filter(p=>!q||p.name.toLowerCase().includes(q)||(p.variant||'').toLowerCase().includes(q)||p.sku.toLowerCase().includes(q))
+    .filter(p=>!only||POS.packDraft[p.sku]>0)
+    .sort((a,b)=>(a.name+(a.variant||'')).localeCompare(b.name+(b.variant||'')));
+  document.getElementById('pos-pack-list').innerHTML=list.length===0
+    ? '<div class="empty-state" style="padding:16px"><p>No products match</p></div>'
+    : list.map(p=>{
+        const b=POS.packDraft[p.sku]||'';
+        const sold=st[p.sku]?st[p.sku].sold:0;
+        const left=b?b-sold:'';
+        const tooMany=b&&b>(p.homeQty||0)+sold;
+        const all=posPackAllQty(p,st);
+        const sk=escapeHtml(p.sku);
+        return `<div class="pos-pack-row" data-sku="${sk}"><span style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(p.name)}</div><div style="font-size:11px;color:var(--text-muted)">${escapeHtml(p.variant||p.sku)}</div></span>
+          <span${tooMany?' class="warn" title="More than your total stock"':''}>${p.homeQty||0}</span><span>${sold||''}</span><span class="pk-left${left!==''&&left<0?' warn':''}">${left}</span>
+          <span><input type="checkbox" class="pk-all" ${b&&b===all?'checked':''} ${all>0?'':'disabled'} aria-label="Bring all" onchange="posPackToggleAll('${sk}',this.checked)"></span>
+          <span><input type="number" class="pk-qty" min="0" inputmode="numeric" value="${b}" oninput="posPackSet('${sk}',this.value)"></span></div>`;
+      }).join('');
+  const units=Object.values(POS.packDraft).reduce((a,n)=>a+n,0);
+  document.getElementById('pos-pack-sum').textContent=`${Object.keys(POS.packDraft).length} items · ${units} units packed`;
+}
+// "All" = everything on hand plus whatever already sold at this event.
+function posPackAllQty(p,st){return (p.homeQty||0)+(st[p.sku]?st[p.sku].sold:0);}
+// Update one row in place (keeps the keyboard up while typing).
+function posPackSyncRow(sku){
+  const row=[...document.querySelectorAll('#pos-pack-list .pos-pack-row')].find(r=>r.dataset.sku===sku); if(!row) return;
+  const p=APP.products.find(x=>x.sku===sku); const st=posEventStock(posGetEvent());
+  const b=POS.packDraft[sku]||0, all=p?posPackAllQty(p,st):0, sold=st[sku]?st[sku].sold:0;
+  row.querySelector('.pk-all').checked=b>0&&b===all;
+  const left=row.querySelector('.pk-left'); left.textContent=b?b-sold:''; left.classList.toggle('warn',!!b&&b-sold<0);
+}
+function posPackToggleAll(sku,on){
+  const p=APP.products.find(x=>x.sku===sku); if(!p) return;
+  if(on){const n=posPackAllQty(p,posEventStock(posGetEvent())); if(n>0) POS.packDraft[sku]=n;}
+  else delete POS.packDraft[sku];
+  const row=[...document.querySelectorAll('#pos-pack-list .pos-pack-row')].find(r=>r.dataset.sku===sku);
+  if(row) row.querySelector('.pk-qty').value=POS.packDraft[sku]||'';
+  posPackSyncRow(sku); posPackSum();
+}
+function posPackSum(){
+  const units=Object.values(POS.packDraft).reduce((a,x)=>a+x,0);
+  document.getElementById('pos-pack-sum').textContent=`${Object.keys(POS.packDraft).length} items · ${units} units packed`;
+}
+function posPackSet(sku,val){
+  const n=parseInt(val,10);
+  if(n>0) POS.packDraft[sku]=n; else delete POS.packDraft[sku];
+  posPackSyncRow(sku);
+  const units=Object.values(POS.packDraft).reduce((a,x)=>a+x,0);
+  document.getElementById('pos-pack-sum').textContent=`${Object.keys(POS.packDraft).length} items · ${units} units packed`;
+}
+function posPackBringAll(){
+  const st=posEventStock(posGetEvent());
+  // Everything currently on hand, plus whatever already sold here, so the
+  // booth "left" count matches total stock.
+  APP.products.filter(p=>p.active!==false).forEach(p=>{
+    const n=(p.homeQty||0)+(st[p.sku]?st[p.sku].sold:0);
+    if(n>0) POS.packDraft[p.sku]=n;
+  });
+  document.getElementById('pos-pack-only').checked=true;
+  posRenderPack();
+}
+function posPackClear(){
+  if(Object.keys(POS.packDraft).length&&!confirm('Clear the whole event stock list?')) return;
+  POS.packDraft={}; document.getElementById('pos-pack-only').checked=false; posRenderPack();
+}
+function posSavePack(){
+  const ev=posGetEvent(); if(!ev) return;
+  ev.stock={}; Object.entries(POS.packDraft).forEach(([sku,n])=>{ev.stock[sku]={brought:n};});
+  ev.trackStock=true;
+  posSave('mf_pos_event',ev);
+  posCloseModal(null,'pos-pack-modal');
+  showToast('Event stock saved','success');
+  posRender();
+}
+
+// ── one time discount (this cart only) ──
+POS.discKind='pct';
+function posOpenDiscount(){
+  const c=posGetCart();
+  if(!c.lines.length){showToast('Add an item first','info');return;}
+  const md=c.manualDisc;
+  posSetDiscKind(md?md.kind:'pct');
+  document.getElementById('pos-disc-val').value=md?md.value:'';
+  document.getElementById('pos-disc-note').value=md?(md.note||''):'';
+  document.getElementById('pos-disc-remove').style.display=md?'block':'none';
+  posDiscPreview();
+  document.getElementById('pos-disc-modal').classList.add('open');
+}
+function posSetDiscKind(k){
+  POS.discKind=k;
+  document.getElementById('pos-disc-pct').classList.toggle('on',k==='pct');
+  document.getElementById('pos-disc-amt').classList.toggle('on',k==='amt');
+  document.getElementById('pos-disc-val-label').textContent=k==='pct'?'Percent off':'Dollars off';
+  posDiscPreview();
+}
+function posDiscPreview(){
+  const v=parseFloat(document.getElementById('pos-disc-val').value);
+  const el=document.getElementById('pos-disc-preview');
+  if(!(v>0)){el.textContent='—';return;}
+  const c={...posGetCart(),manualDisc:{kind:POS.discKind,value:v}};
+  const t=posCompute(c,posGetEvent(),'card');
+  el.textContent='−'+fmt(t.manualDiscount);
+}
+function posApplyDiscount(){
+  const v=parseFloat(document.getElementById('pos-disc-val').value);
+  if(!(v>0)){showToast('Enter an amount above 0','error');return;}
+  if(POS.discKind==='pct'&&v>100){showToast('Percent can\'t be over 100','error');return;}
+  const c=posGetCart();
+  c.manualDisc={kind:POS.discKind,value:v,note:document.getElementById('pos-disc-note').value.trim()};
+  posSetCart(c);
+  posCloseModal(null,'pos-disc-modal');
+  posRenderCart();
+}
+function posRemoveDiscount(){
+  const c=posGetCart(); c.manualDisc=null; posSetCart(c);
+  posCloseModal(null,'pos-disc-modal'); posRenderCart();
+}
+
+// ── sale history: view, void, fix payment type ──
+function posOpenSale(cartId){
+  const s=posGetSales().find(x=>x.cartId===cartId); if(!s) return;
+  const when=new Date(s.paidAt||s.createdAt);
+  const methodName=s.method==='cash'?'Cash':'Card';
+  const row=(a,b,cls='')=>`<div class="pos-tot-row ${cls}"><span>${a}</span><span>${b}</span></div>`;
+  let h=`<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+      <div style="font-family:var(--font-display);font-size:18px;font-weight:700">${escapeHtml(s.saleNo)}</div>
+      <span class="pos-sale-method ${s.voided?'m-void':s.method==='cash'?'m-cash':'m-card'}">${s.voided?'Void':methodName}</span></div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">${when.toLocaleDateString()} ${when.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})} · ${escapeHtml(s.user||'')}${s.squareTxId?` · Square ${escapeHtml(String(s.squareTxId).slice(0,10))}`:''}</div>
+    <div class="card" style="padding:8px 12px;margin-bottom:10px">${s.lines.map(l=>`<div class="pos-detail-line"><span>${escapeHtml(l.name)}${l.variant?' '+escapeHtml(l.variant):''} x${l.qty}</span><span>${fmt(toCents(l.lineTotal))}</span></div>`).join('')}</div>`;
+  h+=row('Subtotal',fmt(toCents(s.subtotal)));
+  if(Number(s.discount)) h+=row(escapeHtml(s.discountLabel||'Discount'),'−'+fmt(toCents(s.discount)),'deal');
+  if(Number(s.tax)) h+=row(s.taxOnTop?'Tax':'Tax included',fmt(toCents(s.tax)),'small');
+  h+=row('Total',fmt(toCents(s.total)),'grand');
+  if(s.voided){
+    h+=`<div class="pos-warn" style="margin-top:12px">Voided ${new Date(s.voidedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}. Items were put back in stock and this sale is left out of the event totals.</div>`;
+  }else{
+    const other=s.method==='cash'?'Card':'Cash';
+    h+=`<div class="pos-detail-actions">
+      <button class="pos-alt-btn" onclick="posSwitchMethod('${escapeHtml(s.cartId)}')">Change to ${other}</button>
+      <button class="pos-void-btn" onclick="posVoidSale('${escapeHtml(s.cartId)}')">Void Sale &amp; Restock Items</button>
+    </div>`;
+  }
+  h+=`<button class="modal-cancel-btn" style="margin-top:8px" onclick="posCloseModal(null,'pos-sale-modal')">Close</button>`;
+  document.getElementById('pos-sale-detail').innerHTML=h;
+  document.getElementById('pos-sale-modal').classList.add('open');
+}
+function posVoidSale(cartId){
+  const sales=posGetSales(); const s=sales.find(x=>x.cartId===cartId);
+  if(!s||s.voided) return;
+  const card=s.method!=='cash';
+  if(!confirm(`Void ${s.saleNo} (${fmt(toCents(s.total))})?\n\nItems go back into stock and the sale drops out of the totals.`+(card?'\n\nThis does NOT refund the card. If the customer was charged, refund it in the Square app.':''))) return;
+  s.voided=true; s.voidedAt=new Date().toISOString(); s.voidedBy=APP.settings.username||'User';
+  posSave('mf_pos_sales',sales);
+  // Put the stock back the same way a restock scan does, so the Worker,
+  // Sheet and Squarespace counts follow.
+  s.lines.forEach(l=>{
+    const p=APP.products.find(x=>x.sku===l.sku);
+    if(p) p.homeQty=(p.homeQty||0)+l.qty;
+    const tx={timestamp:s.voidedAt,sku:l.sku,name:l.name,variant:l.variant,type:'restock',qty:l.qty,bucket:'home',platform:'manual',
+      notes:`VOID ${s.saleNo}${s.event?' · '+s.event:''}`,user:s.voidedBy};
+    APP.transactions.push(tx);
+    apiCall('POST','/transaction',{transaction:tx,products:p?[{sku:p.sku,sqId:p.sqId,etsyId:p.etsyId,tiktokId:p.tiktokId}]:[]});
+  });
+  saveLocalData();
+  posCloseModal(null,'pos-sale-modal');
+  showToast(`${s.saleNo} voided, items restocked`,'success');
+  posRender(); renderDashboard(); renderProductList();
+}
+function posSwitchMethod(cartId){
+  const sales=posGetSales(); const s=sales.find(x=>x.cartId===cartId);
+  if(!s||s.voided) return;
+  const to=s.method==='cash'?'square':'cash';
+  if(!confirm(`Change ${s.saleNo} to ${to==='cash'?'Cash':'Card'}? The total stays ${fmt(toCents(s.total))}; only the payment type changes (for the card vs cash split).`)) return;
+  s.method=to; s.methodChangedAt=new Date().toISOString();
+  posSave('mf_pos_sales',sales);
+  posCloseModal(null,'pos-sale-modal');
+  posRender();
+  showToast(`${s.saleNo} marked as ${to==='cash'?'cash':'card'}`,'success');
 }
 
 // ── scanning: Bluetooth scanner (types like a keyboard) + camera ──
